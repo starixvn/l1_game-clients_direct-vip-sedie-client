@@ -199,15 +199,15 @@ export const languages = {
         "win_loss": "Thắng Thua",
         "you_reach_max_win": "Bạn Đã Đạt Mức Tiền Thắng Tối Đa"
     },
-    "SeDie": {
+    "VipSeDie": {
         "bet_option_red2": "2 Đỏ",
         "bet_option_red3": "3 Đỏ",
         "bet_option_red4": "4 Đỏ",
         "bet_option_white3": "1 Đỏ",
         "bet_option_white4": "4 Trắng",
         "even_win": "CHẴN THẮNG",
-        "game_icon_name": "XÓC ĐĨA",
-        "game_name": "Xóc Đĩa",
+        "game_icon_name": "Xóc Đĩa VIP",
+        "game_name": "Xóc Đĩa VIP",
         "glossary_even": "Chẵn",
         "glossary_odd": "Lẻ",
         "odd_win": "LẺ THẮNG"

@@ -199,15 +199,15 @@ export const languages = {
         "win_loss": "Win Loss",
         "you_reach_max_win": "You reached the max win"
     },
-    "SeDie": {
+    "VipSeDie": {
         "bet_option_red2": "2 Red",
         "bet_option_red3": "3 Red",
         "bet_option_red4": "4 Red",
         "bet_option_white3": "1 Red",
         "bet_option_white4": "4 White",
         "even_win": "EVEN WINS",
-        "game_icon_name": "SE DIE",
-        "game_name": "Se Die",
+        "game_icon_name": "VIP Se Die",
+        "game_name": "VIP Se Die",
         "glossary_even": "Even",
         "glossary_odd": "Odd",
         "odd_win": "ODD WINS"

@@ -199,15 +199,15 @@ export const languages = {
         "win_loss": "Menang Kalah",
         "you_reach_max_win": "Anda mencapai Maksimal Menang"
     },
-    "SeDie": {
+    "VipSeDie": {
         "bet_option_red2": "2 Merah",
         "bet_option_red3": "3 Merah",
         "bet_option_red4": "4 Merah",
         "bet_option_white3": "1 Merah",
         "bet_option_white4": "4 Putih",
         "even_win": "GENAP MENANG",
-        "game_icon_name": "SE DIE",
-        "game_name": "Se Die",
+        "game_icon_name": "VIP Se Die",
+        "game_name": "VIP Se Die",
         "glossary_even": "Genap",
         "glossary_odd": "Ganjil",
         "odd_win": "GANJIL MENANG"

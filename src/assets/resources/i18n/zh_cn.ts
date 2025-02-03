@@ -199,15 +199,15 @@ export const languages = {
         "win_loss": "赢 输",
         "you_reach_max_win": "您达到了最大胜利"
     },
-    "SeDie": {
+    "VipSeDie": {
         "bet_option_red2": "2 红",
         "bet_option_red3": "3 红",
         "bet_option_red4": "4 红",
         "bet_option_white3": "1 红",
         "bet_option_white4": "4 白",
         "even_win": "双赢",
-        "game_icon_name": "色碟",
-        "game_name": "色碟",
+        "game_icon_name": "VIP 色碟",
+        "game_name": "VIP 色碟",
         "glossary_even": "双",
         "glossary_odd": "单",
         "odd_win": "单赢"
