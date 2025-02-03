@@ -1,5 +1,5 @@
 {
-"skeleton": { "hash": "DJZwuhDiFqQel1HdMsXNbuwdyVg", "spine": "3.8.99", "x": -321, "y": -321, "width": 642, "height": 642 },
+"skeleton": { "hash": "P0woh6FsbW4uTfzSNJoDqW8H2BM", "spine": "3.8.99", "x": -321, "y": -321, "width": 642, "height": 642 },
 "bones": [
 	{ "name": "root" },
 	{ "name": "big", "parent": "root" },
@@ -14,7 +14,7 @@
 		"name": "default",
 		"attachments": {
 			"big-mask": {
-				"big": { "width": 360, "height": 266 }
+				"big": { "width": 360, "height": 226 }
 			},
 			"big-sequence": {
 				"big-sequence/1_00": { "width": 642, "height": 642 },
