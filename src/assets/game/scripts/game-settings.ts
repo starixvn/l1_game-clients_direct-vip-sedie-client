@@ -4,9 +4,9 @@ import { LogStore } from "db://shared-components/game/scripts/stores/log-store";
 import { sharedContainer } from "../../scripts/shared-container";
 
 export const settings = {
-    id: 2,
-    name: "SeDie",
-    namespaces: ["SeDie"],
+    id: 22,
+    name: "VipSeDie",
+    namespaces: ["VipSeDie"],
     durations: {
         wholeRound: 39,
         lockingBet: 5,
