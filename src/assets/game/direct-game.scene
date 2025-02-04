@@ -1373,7 +1373,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": 0,
-      "y": 260.631,
+      "y": 196.87099999999998,
       "z": 0
     },
     "_lrot": {
@@ -1411,13 +1411,13 @@
     "__prefab": null,
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 180.67999267578125,
-      "height": 275.3999938964844
+      "width": 144.91000366210938,
+      "height": 259.7699890136719
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
-      "x": 0.49983396734274443,
-      "y": 0.4975671816129482
+      "x": 0.5180456683298897,
+      "y": 0.19652000383452203
     },
     "_id": "cacPttDbdP767QU5EjxoVA"
   },
@@ -1442,7 +1442,7 @@
       "a": 255
     },
     "_skeletonData": {
-      "__uuid__": "74ee2469-8994-4fae-9517-a9ecb67d1988",
+      "__uuid__": "22e3e429-f26c-4578-8c1c-f15b9dc7db0d",
       "__expectedType__": "sp.SkeletonData"
     },
     "defaultSkin": "default",
