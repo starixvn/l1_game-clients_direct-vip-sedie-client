@@ -1373,7 +1373,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": 0,
-      "y": 196.87099999999998,
+      "y": 198.071,
       "z": 0
     },
     "_lrot": {
@@ -1442,7 +1442,7 @@
       "a": 255
     },
     "_skeletonData": {
-      "__uuid__": "22e3e429-f26c-4578-8c1c-f15b9dc7db0d",
+      "__uuid__": "506b52a8-1ece-4e4e-ad88-5a67578ff688",
       "__expectedType__": "sp.SkeletonData"
     },
     "defaultSkin": "default",

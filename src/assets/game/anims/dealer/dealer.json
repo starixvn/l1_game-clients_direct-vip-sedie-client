@@ -1,5 +1,5 @@
 {
-"skeleton": { "hash": "gxrbDSDVdpK0KAlrUie7cMNRIgw=", "spine": "3.8.75", "x": -75.07, "y": -51.05, "width": 144.91, "height": 259.77 },
+"skeleton": { "hash": "kcSd4cpRy0On1aa0HIwU57MSr4U=", "spine": "3.8.75", "x": -75.07, "y": -51.05, "width": 144.91, "height": 259.77 },
 "bones": [
 	{ "name": "root" },
 	{ "name": "character", "parent": "root" },
@@ -347,7 +347,7 @@
 		"bones": {
 			"arm-L": {
 				"rotate": [
-					{ "angle": 1.29 }
+					{ "angle": -6.24 }
 				],
 				"translate": [
 					{ "x": -1.16, "y": 0.03 }
@@ -358,7 +358,7 @@
 			},
 			"arm-R": {
 				"rotate": [
-					{ "angle": 0.88 }
+					{ "angle": 8 }
 				],
 				"translate": [
 					{ "x": -2.43, "y": 2.24 }
@@ -750,7 +750,7 @@
 			},
 			"hand-L": {
 				"rotate": [
-					{ "angle": 12.46 }
+					{ "angle": 20.25 }
 				],
 				"scale": [
 					{ "x": 1.072 }
@@ -758,14 +758,14 @@
 			},
 			"hand-L3": {
 				"rotate": [
-					{ "angle": 4.14, "curve": 0.25, "c3": 0.75 },
-					{ "time": 2, "angle": -0.72, "curve": 0.25, "c3": 0.75 },
-					{ "time": 4, "angle": 4.14 }
+					{ "angle": -1.95, "curve": 0.25, "c3": 0.75 },
+					{ "time": 2, "angle": 3.12, "curve": 0.25, "c3": 0.75 },
+					{ "time": 4, "angle": -1.95 }
 				]
 			},
 			"hand-R3": {
 				"rotate": [
-					{ "angle": -2.94 }
+					{ "angle": 8.16 }
 				]
 			},
 			"head": {
@@ -780,12 +780,15 @@
 			},
 			"hand-R": {
 				"rotate": [
-					{ "angle": -10.41 }
+					{ "angle": -22.49 }
 				]
 			},
 			"shadow": {
 				"translate": [
-					{ "x": 1.77, "y": 3.19 }
+					{ "x": 1.77, "y": 9.28 }
+				],
+				"scale": [
+					{ "x": 1.116, "y": 0.785 }
 				]
 			}
 		}
