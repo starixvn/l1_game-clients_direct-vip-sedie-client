@@ -7,5 +7,4 @@ window.envConfig = {
     subGuideDomain: "hd-guide",
     enableMsgpackParserOnNotification: false,
     enableMsgpackParserAllGames: false,
-    backgroundNoTranslate: true,
 };
