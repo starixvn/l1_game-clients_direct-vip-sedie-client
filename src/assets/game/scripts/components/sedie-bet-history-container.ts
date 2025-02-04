@@ -1,5 +1,5 @@
 import gc from "@sg/game-client-base";
-import { Prefab, _decorator } from "cc";
+import { _decorator } from "cc";
 import BetHistoryContainer from "db://shared-components/game/bet-history/scripts/components/bet-history-container";
 import { SeDieBetHistoryTable } from "./sedie-bet-history-table";
 
@@ -7,9 +7,7 @@ const { ccclass, property } = _decorator;
 
 @ccclass
 export default class SeDieBetHistoryContainer extends BetHistoryContainer {
-    @property(Prefab)
-    betPrefab: Prefab = null;
-
+    table: SeDieBetHistoryTable = null;
     protected isFirstLoad = true;
     protected DURATION_DELAY_RENDER_DATA = 0.1;
     protected currentBetHistoryModel: gc.BetHistory.BetHistoryModel = null;
@@ -22,7 +20,7 @@ export default class SeDieBetHistoryContainer extends BetHistoryContainer {
         }
 
         if (this.isFirstLoad) {
-            const seDieTable = this.table as SeDieBetHistoryTable;
+            const seDieTable = this.table;
             if (seDieTable?.dialog) {
                 seDieTable.dialog.callBackFn = this.createCallBackFn(seDieTable, betHistoryModel);
             }
@@ -50,12 +48,11 @@ export default class SeDieBetHistoryContainer extends BetHistoryContainer {
     }
 
     protected renderBetHistory() {
-        (this.table as SeDieBetHistoryTable).showBetHistory({
+        this.table.showBetHistory({
             data: this.currentBetHistoryModel,
             headerPrefab: this.headerPrefab,
             bodyItemPrefab: this.bodyItemPrefab,
             resultPrefab: this.resultPrefab,
-            betsPrefab: this.betPrefab,
         });
     }
 }
