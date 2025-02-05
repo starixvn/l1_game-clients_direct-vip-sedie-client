@@ -21,15 +21,15 @@ const defaultConfig: gc.Configs.SiteConfigs = {
     enableMsgpackParserAllGames: false,
     enableMsgpackParserOnNotification: false,
     websocket: {
-        proxyPath: "sedie",
-        route: "sedie",
+        proxyPath: "vipsedie",
+        route: "vsedie",
     },
     websocketOptions: {
         timeout: 3000,
     },
     mainObserverNamespace: "VipSeDie",
     tolgeeUrl: "",
-    storagePrefixKey: "portrait_sedie",
+    storagePrefixKey: "portrait_vipsedie",
 };
 
 let configDev = {
