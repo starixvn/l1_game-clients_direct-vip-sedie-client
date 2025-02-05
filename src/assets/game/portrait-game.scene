@@ -1446,7 +1446,7 @@
       "__expectedType__": "sp.SkeletonData"
     },
     "defaultSkin": "default",
-    "defaultAnimation": "",
+    "defaultAnimation": "breath",
     "_premultipliedAlpha": false,
     "_timeScale": 1,
     "_preCacheMode": 0,
