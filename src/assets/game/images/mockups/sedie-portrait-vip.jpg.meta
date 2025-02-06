@@ -2,7 +2,7 @@
   "ver": "1.0.27",
   "importer": "image",
   "imported": true,
-  "uuid": "2e558cd1-096a-4c06-988e-e5351a2689e9",
+  "uuid": "79a8ecc0-1bcd-4897-a3a8-7afc727663ec",
   "files": [
     ".jpg",
     ".json"
@@ -10,14 +10,14 @@
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "2e558cd1-096a-4c06-988e-e5351a2689e9@6c48a",
-      "displayName": "sedie",
+      "uuid": "79a8ecc0-1bcd-4897-a3a8-7afc727663ec@6c48a",
+      "displayName": "sedie-portrait-vip",
       "id": "6c48a",
       "name": "texture",
       "userData": {
         "wrapModeS": "clamp-to-edge",
         "wrapModeT": "clamp-to-edge",
-        "imageUuidOrDatabaseUri": "2e558cd1-096a-4c06-988e-e5351a2689e9",
+        "imageUuidOrDatabaseUri": "79a8ecc0-1bcd-4897-a3a8-7afc727663ec",
         "isUuid": true,
         "visible": false,
         "minfilter": "linear",
@@ -34,8 +34,8 @@
     },
     "f9941": {
       "importer": "sprite-frame",
-      "uuid": "2e558cd1-096a-4c06-988e-e5351a2689e9@f9941",
-      "displayName": "sedie",
+      "uuid": "79a8ecc0-1bcd-4897-a3a8-7afc727663ec@f9941",
+      "displayName": "sedie-portrait-vip",
       "id": "f9941",
       "name": "spriteFrame",
       "userData": {
@@ -114,7 +114,7 @@
           ]
         },
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "2e558cd1-096a-4c06-988e-e5351a2689e9@6c48a",
+        "imageUuidOrDatabaseUri": "79a8ecc0-1bcd-4897-a3a8-7afc727663ec@6c48a",
         "atlasUuid": ""
       },
       "ver": "1.0.12",
@@ -129,6 +129,6 @@
     "type": "sprite-frame",
     "hasAlpha": false,
     "fixAlphaTransparencyArtifacts": false,
-    "redirect": "2e558cd1-096a-4c06-988e-e5351a2689e9@6c48a"
+    "redirect": "79a8ecc0-1bcd-4897-a3a8-7afc727663ec@6c48a"
   }
 }
