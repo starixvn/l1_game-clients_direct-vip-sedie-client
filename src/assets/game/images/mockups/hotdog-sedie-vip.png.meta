@@ -2,22 +2,22 @@
   "ver": "1.0.27",
   "importer": "image",
   "imported": true,
-  "uuid": "ac9f1c6c-e787-4ea7-89e3-91ffb70424f9",
+  "uuid": "e6fc6022-87ac-4a0d-b15b-a286162e6e43",
   "files": [
-    ".jpg",
-    ".json"
+    ".json",
+    ".png"
   ],
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "ac9f1c6c-e787-4ea7-89e3-91ffb70424f9@6c48a",
-      "displayName": "sedie-hotdog",
+      "uuid": "e6fc6022-87ac-4a0d-b15b-a286162e6e43@6c48a",
+      "displayName": "hotdog-sedie-vip",
       "id": "6c48a",
       "name": "texture",
       "userData": {
         "wrapModeS": "clamp-to-edge",
         "wrapModeT": "clamp-to-edge",
-        "imageUuidOrDatabaseUri": "ac9f1c6c-e787-4ea7-89e3-91ffb70424f9",
+        "imageUuidOrDatabaseUri": "e6fc6022-87ac-4a0d-b15b-a286162e6e43",
         "isUuid": true,
         "visible": false,
         "minfilter": "linear",
@@ -34,8 +34,8 @@
     },
     "f9941": {
       "importer": "sprite-frame",
-      "uuid": "ac9f1c6c-e787-4ea7-89e3-91ffb70424f9@f9941",
-      "displayName": "sedie-hotdog",
+      "uuid": "e6fc6022-87ac-4a0d-b15b-a286162e6e43@f9941",
+      "displayName": "hotdog-sedie-vip",
       "id": "f9941",
       "name": "spriteFrame",
       "userData": {
@@ -114,7 +114,7 @@
           ]
         },
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "ac9f1c6c-e787-4ea7-89e3-91ffb70424f9@6c48a",
+        "imageUuidOrDatabaseUri": "e6fc6022-87ac-4a0d-b15b-a286162e6e43@6c48a",
         "atlasUuid": ""
       },
       "ver": "1.0.12",
@@ -129,6 +129,6 @@
     "type": "sprite-frame",
     "hasAlpha": false,
     "fixAlphaTransparencyArtifacts": false,
-    "redirect": "ac9f1c6c-e787-4ea7-89e3-91ffb70424f9@6c48a"
+    "redirect": "e6fc6022-87ac-4a0d-b15b-a286162e6e43@6c48a"
   }
 }
