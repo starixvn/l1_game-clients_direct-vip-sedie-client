@@ -116,13 +116,13 @@
                 <key>spriteOffset</key>
                 <string>{0,0}</string>
                 <key>spriteSize</key>
-                <string>{36,37}</string>
+                <string>{40,40}</string>
                 <key>spriteSourceSize</key>
-                <string>{36,37}</string>
+                <string>{40,40}</string>
                 <key>textureRect</key>
-                <string>{{212,197},{36,37}}</string>
+                <string>{{212,197},{40,40}}</string>
                 <key>textureRotated</key>
-                <true/>
+                <false/>
             </dict>
             <key>chip_trang.png</key>
             <dict>
@@ -146,13 +146,13 @@
                 <key>spriteOffset</key>
                 <string>{0,0}</string>
                 <key>spriteSize</key>
-                <string>{36,37}</string>
+                <string>{40,40}</string>
                 <key>spriteSourceSize</key>
-                <string>{36,37}</string>
+                <string>{40,40}</string>
                 <key>textureRect</key>
-                <string>{{251,197},{36,37}}</string>
+                <string>{{156,236},{40,40}}</string>
                 <key>textureRotated</key>
-                <true/>
+                <false/>
             </dict>
             <key>dealer.png</key>
             <dict>
@@ -303,7 +303,7 @@
             <key>size</key>
             <string>{512,512}</string>
             <key>smartupdate</key>
-            <string>$TexturePacker:SmartUpdate:7832b80d0aa7dea3b4edcaf2578e9ac4:4281e36c09649e6d45480c5efa14114c:5b92b359debe7f583d69ddcd61b3ab07$</string>
+            <string>$TexturePacker:SmartUpdate:6796496b706c8529139293e6659875f6:39ace4be340f67d3c8313ce4bcfc054a:5b92b359debe7f583d69ddcd61b3ab07$</string>
             <key>textureFileName</key>
             <string>sedie.webp</string>
         </dict>
