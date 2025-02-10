@@ -2012,6 +2012,10 @@
     "betOption": {
       "__id__": 11
     },
+    "betPrefab": {
+      "__uuid__": "1222ee09-104d-4a40-9b6e-ba37efc1beed",
+      "__expectedType__": "cc.Prefab"
+    },
     "_id": ""
   },
   {

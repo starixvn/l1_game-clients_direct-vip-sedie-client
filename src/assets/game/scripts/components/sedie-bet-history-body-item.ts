@@ -1,5 +1,5 @@
 import gc from "@sg/game-client-base";
-import { _decorator, Button, Color, instantiate, Label, Node, Prefab } from "cc";
+import { _decorator, Button, instantiate, Label, Node, Prefab } from "cc";
 import { BetHistoryNewBodyItem } from "db://shared-components/game/bet-history-new/scripts/bet-history-new-body-item";
 import { BetHistoryBodyItemType } from "db://shared-components/game/bet-history/scripts/components/bet-history-body-item";
 import SeDieBetHistoryBetOption from "./sedie-bet-history-bet-option";
@@ -25,10 +25,12 @@ export class SeDieBetHistoryBodyItem extends BetHistoryNewBodyItem {
     @property(Node)
     betOption: Node = null;
 
-    setData(data: SeDieBetHistoryBodyItemType) {
+    @property(Prefab)
+    betPrefab: Prefab = null;
+
+    setData(data: BetHistoryBodyItemType) {
         super.setData(data);
-        const { betsPrefab } = data;
-        const { time, settlementResult, freeBet, odds, betwin } = data.betHistoryLog;
+        const { time, settlementResult, freeBet, odds } = data.betHistoryLog;
         if (time) {
             const date = DateTimeUtils.getStringDate(time);
             const hour = DateTimeUtils.getStringHourByTime(time);
@@ -38,7 +40,7 @@ export class SeDieBetHistoryBodyItem extends BetHistoryNewBodyItem {
 
         if (settlementResult) {
             Object.keys(settlementResult).forEach((choice) => {
-                const node = instantiate(betsPrefab);
+                const node = instantiate(this.betPrefab);
                 const option = node.getComponent(SeDieBetHistoryBetOption);
                 let stake = data.betHistoryLog[choice];
                 if (+stake > 0) {

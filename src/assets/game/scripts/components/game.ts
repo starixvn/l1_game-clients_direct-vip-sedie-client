@@ -112,15 +112,6 @@ export default class Game extends GameComponent {
         }
     }
 
-    @render(Rounds.RoundTimeStore, (store) => store.roundState)
-    fadeVolumeBgMusic(roundState: string) {
-        if (roundState === Rounds.ROUND_STATE.LOCKING_BET) {
-            this.audioContainer.updateVolumeMusicSource(0.3, 3);
-        } else if (roundState === Rounds.ROUND_STATE.SHOW_RESULT) {
-            this.audioContainer.updateVolumeMusicSource(1, 3);
-        }
-    }
-
     @render(Rounds.RoundTimeStore, (store) => store.isStartingRound)
     disableWinNotice(isStartingRound: boolean) {
         isStartingRound && this.winningResult.hideQuickly();

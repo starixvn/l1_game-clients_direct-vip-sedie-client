@@ -91,7 +91,7 @@
     "fileId": "80tZvoMv1GjJpwSijUJKEp"
   },
   {
-    "__type__": "a2cc3rg7tdFx6La2MtOCwD9",
+    "__type__": "9abafdfGYhIg7nfVsIElBKk",
     "_name": "",
     "_objFlags": 0,
     "__editorExtras__": {},
@@ -118,15 +118,11 @@
       "__uuid__": "b2d7df52-b02f-47c3-96a2-8e47f7eb2f68",
       "__expectedType__": "cc.Prefab"
     },
-    "betPrefab": {
-      "__uuid__": "1222ee09-104d-4a40-9b6e-ba37efc1beed",
-      "__expectedType__": "cc.Prefab"
-    },
     "_id": ""
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "7eevgCKbZJTqLPzqlJvsqK"
+    "fileId": "37yp2JYqtGTKM56VuYhDV+"
   },
   {
     "__type__": "cc.Widget",
@@ -173,6 +169,7 @@
       "__id__": 0
     },
     "fileId": "b5J49IqShDE4gypmBSpkWX",
+    "instance": null,
     "targetOverrides": null
   }
 ]
