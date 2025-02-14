@@ -41,7 +41,7 @@ export class SeDieBetHistoryBodyItem extends BetHistoryNewBodyItem {
                 let stake = data.betHistoryLog[choice];
                 if (+stake > 0) {
                     stake = freeBet ? 0 : stake;
-                    const odd = gc.FormatUtils.formatOdds(+odds[choice], data.fractionalOddsFormat);
+                    const odd = this.getFormatOdd(odds[choice]?.toString(), data?.fractionalOddsFormat);
                     option.handleBetOptionItem(choice, odd, FormatUtils.numberWithCommas(stake));
                     option.highlightForWinning(settlementResult[choice]);
                     this.betOption.addChild(node);
