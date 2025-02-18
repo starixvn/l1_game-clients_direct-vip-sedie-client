@@ -4,6 +4,7 @@ export const languages = {
         "Loss": "Thua",
         "back": "Quay Lại",
         "betChoice2": "Đặt",
+        "betChoice_shorten": "Đặt",
         "bet_amount_of_any_choice_incorrect": "Tiền cược của một trong các cửa không hợp lệ.",
         "bet_choice": "Lựa Chọn",
         "bet_choice_away": "Đội Khách",

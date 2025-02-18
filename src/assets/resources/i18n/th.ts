@@ -4,6 +4,7 @@ export const languages = {
         "Loss": "เสีย",
         "back": "กลับ",
         "betChoice2": "ตัวเลือกเดิมพัน",
+        "betChoice_shorten": "ตัวเลือกเดิมพัน",
         "bet_amount_of_any_choice_incorrect": "จำนวนเงินเดิมพันไม่ถูกต้อง",
         "bet_choice": "ตัวเลือกการเดิมพัน",
         "bet_choice_away": "ทีมเยือน",

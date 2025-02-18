@@ -4,6 +4,7 @@ export const languages = {
         "Loss": "输",
         "back": "回",
         "betChoice2": "投注选择",
+        "betChoice_shorten": "投注选择",
         "bet_amount_of_any_choice_incorrect": "投注金额无效",
         "bet_choice": "投注选择",
         "bet_choice_away": "客队",
