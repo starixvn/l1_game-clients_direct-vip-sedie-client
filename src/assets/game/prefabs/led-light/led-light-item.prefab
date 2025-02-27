@@ -133,8 +133,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 32,
-      "height": 32
+      "width": 28,
+      "height": 28
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -170,7 +170,7 @@
       "a": 255
     },
     "_spriteFrame": {
-      "__uuid__": "825869e5-4edf-4e09-99d7-f5985de43b6b@ea9ba",
+      "__uuid__": "8fef9c53-58c5-484c-ac20-c888cb9863d0@46de1",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_type": 0,
@@ -269,8 +269,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 34,
-      "height": 34
+      "width": 30,
+      "height": 30
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -355,8 +355,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 32,
-      "height": 32
+      "width": 28,
+      "height": 28
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -424,7 +424,7 @@
     "__type__": "LedLightItemModel",
     "choiceNames": "odd",
     "backgroundForChoice": {
-      "__uuid__": "825869e5-4edf-4e09-99d7-f5985de43b6b@ea9ba",
+      "__uuid__": "8fef9c53-58c5-484c-ac20-c888cb9863d0@46de1",
       "__expectedType__": "cc.SpriteFrame"
     }
   },
@@ -432,7 +432,7 @@
     "__type__": "LedLightItemModel",
     "choiceNames": "even",
     "backgroundForChoice": {
-      "__uuid__": "825869e5-4edf-4e09-99d7-f5985de43b6b@ead18",
+      "__uuid__": "8fef9c53-58c5-484c-ac20-c888cb9863d0@a8b4d",
       "__expectedType__": "cc.SpriteFrame"
     }
   },
