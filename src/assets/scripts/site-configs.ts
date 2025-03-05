@@ -24,6 +24,9 @@ const defaultConfig: gc.Configs.SiteConfigs = {
         proxyPath: "vipsedie",
         route: "vsedie",
     },
+    websocketOptions: {
+        timeout: 3000,
+    },
     mainObserverNamespace: "VipSeDie",
     tolgeeUrl: "",
     storagePrefixKey: "portrait_vipsedie",
