@@ -1,9 +1,9 @@
 window.envConfig = {
-    systemType: "SG",
+    systemType: "HD",
     ssl: true,
     subDomain: "proxy",
     env: "PROD",
-    sentryUrl: "https://19b3909c434341f0b13eb3a8529e5862@sentry.sabagame.com/9",
+    sentryUrl: "https://aec64e89fed64d25a73926e63f2500f7@sentry.sabagame.com/179",
     subGuideDomain: "guides",
     enableMsgpackParserAllGames: true,
     enableMsgpackParserOnNotification: true,
