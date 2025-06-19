@@ -7,6 +7,7 @@ export const settings = {
     id: 22,
     name: "VipSeDie",
     namespaces: ["VipSeDie"],
+    observerNamespace: "VipSeDie",
     durations: {
         wholeRound: 39,
         lockingBet: 5,
