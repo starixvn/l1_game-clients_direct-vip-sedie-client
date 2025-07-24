@@ -1,18 +1,22 @@
 {
     "lobbyNames": {
-        "en": "SE DIE",
-        "id": "SE DIE",
-        "th": "SE DIE",
-        "vi": "XÓC ĐĨA",
-        "zh_cn": "色碟",
-        "zh_tw": "色碟"
+        "en": "SE DIE 3X",
+        "id": "SE DIE 3X",
+        "th": "SE DIE 3X",
+        "vi": "XÓC ĐĨA 3 XU",
+        "zh_cn": "色碟 3X",
+        "zh_tw": "色碟 3X",
+        "ja": "ソックディア３",
+        "es": "JUEGA 3 VECES"
     },
     "gameNames": {
-        "en": "Se Die",
-        "id": "Se Die",
-        "th": "Se Die",
-        "vi": "Xóc Đĩa",
-        "zh_cn": "色碟",
-        "zh_tw": "色碟"
+        "en": "Se Die 3X",
+        "id": "Se Die 3X",
+        "th": "Se Die 3X",
+        "vi": "Xóc Đĩa 3 Xu",
+        "zh_cn": "色碟 3X",
+        "zh_tw": "色碟 3X",
+        "ja": "3倍の死",
+        "es": "Si Ve 3X"
     }
 }
