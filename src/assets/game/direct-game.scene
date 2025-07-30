@@ -2900,6 +2900,7 @@
     },
     "usingDelayPayChips": false,
     "delayAnimPayChips": 5,
+    "supportChoices": "",
     "_id": "a9notS7qBFnaE7WcvCvMyO"
   },
   {
@@ -4336,8 +4337,8 @@
     ],
     "value": {
       "__type__": "cc.Vec3",
-      "x": -346.5,
-      "y": 741.5,
+      "x": -351.5,
+      "y": 760.5,
       "z": 0
     }
   },
@@ -4355,7 +4356,7 @@
     "propertyPath": [
       "_left"
     ],
-    "value": 34
+    "value": 29
   },
   {
     "__type__": "cc.TargetInfo",
@@ -4371,7 +4372,7 @@
     "propertyPath": [
       "_top"
     ],
-    "value": 6
+    "value": 15
   },
   {
     "__type__": "cc.UITransform",
@@ -4501,7 +4502,7 @@
     "instance": {
       "__id__": 259
     },
-    "targetOverrides": null
+    "targetOverrides": []
   },
   {
     "__type__": "cc.PrefabInstance",
@@ -4585,7 +4586,7 @@
     ],
     "value": {
       "__type__": "cc.Vec3",
-      "x": -165.64499999999998,
+      "x": -148.64499999999998,
       "y": 0,
       "z": 0
     }
@@ -4606,7 +4607,7 @@
     ],
     "value": {
       "__type__": "cc.Size",
-      "width": 242.95999999999998,
+      "width": 215.95999999999998,
       "height": 44
     }
   },
