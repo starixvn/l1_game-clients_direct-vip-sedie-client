@@ -1,7 +1,7 @@
 window.envConfig = {
     systemType: "SG",
     ssl: true,
-    subDomain: "hdproxy",
+    subDomain: "hduatproxy",
     env: "UAT",
     sentryUrl: "https://08d902b128ea45b6a11639833224f481@scsentry.sgamesuat.com/25",
     subGuideDomain: "hduatguides",
