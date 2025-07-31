@@ -1,10 +1,10 @@
 include:
   - project: "l1/game-clients/ci-scripts"
     ref: main
-    file: "cocos-3x.gitlab-ci.yml"
+    file: "cocos-3.8.6.gitlab-ci.yml"
 
 variables:
-  COCOS_VERSION: "3.8.4"
+  COCOS_VERSION: "3.8.6"
   COCOS_PROJECT_DIR: src
   INTEGRATION_IMAGE: pentagon/l1_spaceflight_client
   INTEGRATION_WS_PATH: spaceflight
