@@ -38,7 +38,7 @@ export const languages = {
         "game_category_new_releases": "新作",
         "game_category_ph_1": "全ゲーム",
         "game_category_ph_2": "ピノイ・スペシャル",
-        "game_category_ph_3": "スロットゲーム",
+        "game_category_ph_3": "スロット",
         "game_category_ph_4": "カードゲーム",
         "game_category_ph_5": "カジュアルゲーム",
         "game_category_ph_6": "ロト",
@@ -227,11 +227,11 @@ export const languages = {
         "you_reach_max_win": "最大勝利額に達しました"
     },
     "VipSeDie": {
-        "bet_option_red2": "赤2つ",
+        "bet_option_red2": "赤2",
         "bet_option_red3": "赤3",
         "bet_option_red4": "赤4",
-        "bet_option_white3": "赤1つ",
-        "bet_option_white4": "白4つ",
+        "bet_option_white3": "赤1",
+        "bet_option_white4": "白4",
         "even_win": "偶数勝利",
         "game_icon_name": "VIPソックディア",
         "game_name": "VIPソックディア",
