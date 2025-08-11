@@ -1,5 +1,5 @@
 window.envConfig = {
-    systemType: "SG",
+    systemType: "HD",
     ssl: true,
     subDomain: "hduatproxy",
     env: "UAT",
