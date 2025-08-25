@@ -1,7 +1,8 @@
 import { GameConfigs } from "@sg/game-client-base";
 import { LogStore } from "db://shared-components/game/scripts/stores/log-store";
 
-import { containerOptions, settings } from "../../../assets/game/scripts/game-settings";
+import { settings } from "../../../assets/game/scripts/game-settings";
+import { containerOptions } from "../../../assets/game/scripts/containerOptions";
 
 jest.mock("db://shared-components/shared/scripts/startup", () => ({
     getSharedContainer: jest.fn(() => ({ sharedContainer: true })),

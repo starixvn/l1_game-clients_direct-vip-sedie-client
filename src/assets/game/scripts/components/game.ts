@@ -11,7 +11,8 @@ import { FunctionUtils, isIOS } from "db://shared-components/shared/utils";
 import Observer from "observer";
 
 import { siteConfigs } from "../../../scripts/site-configs";
-import { containerOptions, settings } from "../game-settings";
+import { settings } from "../game-settings";
+import { containerOptions } from "../containerOptions";
 import { IResult, Plate } from "./plate";
 
 startGame(settings.name, containerOptions, siteConfigs, settings.namespaces);

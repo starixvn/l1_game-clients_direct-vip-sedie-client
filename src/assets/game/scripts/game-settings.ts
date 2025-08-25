@@ -1,12 +1,10 @@
-import gc from "@sg/game-client-base";
-import { LogStore } from "db://shared-components/game/scripts/stores/log-store";
-
-import { sharedContainer } from "../../scripts/shared-container";
+const GAME_NAME = "VipSeDie";
 
 export const settings = {
     id: 22,
-    name: "VipSeDie",
-    namespaces: ["VipSeDie"],
+    name: GAME_NAME,
+    observerNamespace: GAME_NAME,
+    namespaces: [GAME_NAME],
     durations: {
         wholeRound: 39,
         lockingBet: 5,
@@ -18,11 +16,4 @@ export const settings = {
     numberOfRoundHistory: 100,
 };
 
-export const containerOptions: gc.IContainerOptions = {
-    globalContainer: sharedContainer,
-    onContainerCreated: (container) => {
-        container.bind(gc.GameConfigs.GameSetting).toConstantValue(settings);
-        container.bind(LogStore).to(LogStore);
-    },
-    features: [...gc.defaultFeatures, gc.BetDetailsNew],
-};
+

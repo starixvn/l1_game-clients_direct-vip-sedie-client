@@ -27,6 +27,12 @@ const defaultConfig: gc.Configs.SiteConfigs = {
     tolgeeUrl: "",
     storagePrefixKey: "portrait_vipsedie",
     backgroundNoTranslate: true,
+    sentry: {
+        dsn: "https://a47db4a57ef2cfe5b9fc433384b40e00@sentry-kl.sgamesuat.com/28",
+        browserUrl: "https://browser.sentry-cdn.com/10.5.0/bundle.min.js",
+        urlHash: "sha384-SAsRvjfAFRX3iwi3MG6ToeZNJVpHcRXKcITfFVLQipWK3uQ8SakuVmHDoSR3YNmJ",
+        ignoreErrors: [],
+    },
 };
 
 let configDev = {
