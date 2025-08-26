@@ -52,8 +52,6 @@ export class TestCard extends Component {
     }
 
     async onClickHightLight() {
-        // this.skeletonHightLight.node.active = true;
-        // await AnimationUtils.playSpine(this.skeletonHightLight, "hightlight", true);
         this.hightLight.active = true;
     }
 
