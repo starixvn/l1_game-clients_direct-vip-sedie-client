@@ -8,7 +8,7 @@
  * Data is read from game-board-data.ts
  */
 
-import { _decorator, Component, Node, Sprite, Color, Label, UITransform, instantiate, Prefab, Vec3 } from "cc";
+import { _decorator, Component, Node, Sprite, Color, Label, UITransform, instantiate, Prefab, Vec3, Vec2, Layout, Size, resources } from "cc";
 import { gameBoardData, Walkway, Cell, Position, CellType, BaseColor } from "../game-board-data";
 import { 
     WALKWAY_LENGTH, 
@@ -17,6 +17,7 @@ import {
     CELL_DIMENSION,
     BASE_COLORS 
 } from "../global-constants";
+import { CellComponent } from "./cell-component";
 
 const { ccclass, property } = _decorator;
 
@@ -70,7 +71,40 @@ export class WalkwayComponent extends Component {
 
     onLoad() {
         console.log(`[WalkwayComponent] onLoad - walkwayID: ${this.walkwayID}`);
-        this.initializeWalkway();
+        
+        // Try to load cell prefab if not assigned
+        if (!this.cellPrefab) {
+            console.log(`[WalkwayComponent] onLoad - Cell prefab not assigned, attempting to load from resources`);
+            this.loadCellPrefab(() => {
+                // Initialize after prefab is loaded (or failed to load)
+                this.initializeWalkway();
+            });
+        } else {
+            console.log(`[WalkwayComponent] onLoad - Cell prefab already assigned`);
+            this.initializeWalkway();
+        }
+    }
+
+    /**
+     * Load cell prefab from resources if not assigned
+     */
+    private loadCellPrefab(callback?: () => void) {
+        const prefabPath = "game/prefabs/cell";
+        resources.load(prefabPath, Prefab, (err, prefab) => {
+            if (err) {
+                console.warn(`[WalkwayComponent] loadCellPrefab - Failed to load cell prefab from ${prefabPath}: ${err.message}`);
+                console.log(`[WalkwayComponent] loadCellPrefab - Will create cells programmatically instead`);
+                if (callback) callback();
+                return;
+            }
+            
+            if (prefab) {
+                this.cellPrefab = prefab;
+                console.log(`[WalkwayComponent] loadCellPrefab - Successfully loaded cell prefab from ${prefabPath}`);
+            }
+            
+            if (callback) callback();
+        });
     }
 
     /**
@@ -121,15 +155,26 @@ export class WalkwayComponent extends Component {
 
             console.log(`[WalkwayComponent] initializeWalkway - Cells after filtering: ${this.walkwayCells.length}`);
 
-            // Sort cells by row and column for proper ordering
+            // Sort cells for proper grid layout ordering
+            // For horizontal walkways (East/West): sort by row first, then column (row-major order)
+            // For vertical walkways (North/South): sort by column first, then row (column-major order)
             this.walkwayCells.sort((a, b) => {
-                if (a.row !== b.row) {
+                if (this.isHorizontal) {
+                    // Horizontal: row-major order (row 0: col 0,1,2... then row 1: col 0,1,2...)
+                    if (a.row !== b.row) {
+                        return a.row - b.row;
+                    }
+                    return a.column - b.column;
+                } else {
+                    // Vertical: column-major order (col 0: row 0,1,2... then col 1: row 0,1,2...)
+                    if (a.column !== b.column) {
+                        return a.column - b.column;
+                    }
                     return a.row - b.row;
                 }
-                return a.column - b.column;
             });
 
-            console.log(`[WalkwayComponent] initializeWalkway - Sorted cells. First cell: ${this.walkwayCells[0]?.cellID}, Last cell: ${this.walkwayCells[this.walkwayCells.length - 1]?.cellID}`);
+            console.log(`[WalkwayComponent] initializeWalkway - Sorted cells (${this.isHorizontal ? "row-major" : "column-major"} order). First cell: ${this.walkwayCells[0]?.cellID}, Last cell: ${this.walkwayCells[this.walkwayCells.length - 1]?.cellID}`);
         } else {
             console.warn(`[WalkwayComponent] initializeWalkway - No cells found for position ${this.walkwayData.position}`);
         }
@@ -154,6 +199,53 @@ export class WalkwayComponent extends Component {
             console.log(`[WalkwayComponent] initializeWalkway - Container size set: ${width}x${height}`);
         } else {
             console.warn(`[WalkwayComponent] initializeWalkway - No UITransform found on container`);
+        }
+
+        // Set up Grid Layout component for automatic cell positioning
+        console.log(`[WalkwayComponent] initializeWalkway - Setting up Grid Layout`);
+        let layout = container.getComponent(Layout);
+        if (!layout) {
+            console.log(`[WalkwayComponent] initializeWalkway - Creating Layout component`);
+            layout = container.addComponent(Layout);
+        } else {
+            console.log(`[WalkwayComponent] initializeWalkway - Layout component already exists`);
+        }
+
+        if (layout) {
+            // Configure grid layout based on walkway orientation
+            layout.type = Layout.Type.GRID;
+            layout.resizeMode = Layout.ResizeMode.NONE; // Don't resize children
+            
+            if (this.isHorizontal) {
+                // Horizontal walkways: cells flow horizontally (columns), then wrap to next row
+                layout.startAxis = Layout.AxisDirection.HORIZONTAL;
+                layout.paddingLeft = 0;
+                layout.paddingRight = 0;
+                layout.paddingTop = 0;
+                layout.paddingBottom = 0;
+                layout.spacingX = 0;
+                layout.spacingY = 0;
+                // Calculate grid columns based on walkway length
+                layout.cellSize = new Size(CELL_DIMENSION, CELL_DIMENSION);
+                console.log(`[WalkwayComponent] initializeWalkway - Grid layout configured for horizontal walkway`);
+            } else {
+                // Vertical walkways: cells flow vertically (rows), then wrap to next column
+                layout.startAxis = Layout.AxisDirection.VERTICAL;
+                layout.paddingLeft = 0;
+                layout.paddingRight = 0;
+                layout.paddingTop = 0;
+                layout.paddingBottom = 0;
+                layout.spacingX = 0;
+                layout.spacingY = 0;
+                layout.cellSize = new Size(CELL_DIMENSION, CELL_DIMENSION);
+                console.log(`[WalkwayComponent] initializeWalkway - Grid layout configured for vertical walkway`);
+            }
+            
+            // Enable layout
+            layout.enabled = true;
+            console.log(`[WalkwayComponent] initializeWalkway - Grid layout enabled`);
+        } else {
+            console.warn(`[WalkwayComponent] initializeWalkway - Failed to get or create Layout component`);
         }
 
         // Build cells
@@ -181,28 +273,46 @@ export class WalkwayComponent extends Component {
         this.cellNodesMap.clear();
         container.removeAllChildren();
 
-        // Create cells
+        // Create cells and add them in grid order
+        // For grid layout, we need to add cells in the order they should appear in the grid
         let createdCount = 0;
         let failedCount = 0;
         
+        // Create all cell nodes first
+        const cellNodes: Array<{ node: Node; cell: Cell }> = [];
         this.walkwayCells.forEach((cell, index) => {
             console.log(`[WalkwayComponent] buildCells - Creating cell ${index + 1}/${this.walkwayCells.length}: ${cell.cellID} (row: ${cell.row}, column: ${cell.column}, type: ${cell.cellType})`);
             
             const cellNode = this.createCellNode(cell);
             if (cellNode) {
-                container.addChild(cellNode);
-                this.cellNodesMap.set(cell.cellID, {
-                    node: cellNode,
-                    cell: cell,
-                    cellID: cell.cellID
-                });
+                cellNodes.push({ node: cellNode, cell: cell });
                 createdCount++;
-                console.log(`[WalkwayComponent] buildCells - Successfully created and added cell ${cell.cellID} at position (${cellNode.position.x}, ${cellNode.position.y})`);
+                console.log(`[WalkwayComponent] buildCells - Successfully created cell ${cell.cellID}`);
             } else {
                 failedCount++;
                 console.error(`[WalkwayComponent] buildCells - Failed to create cell ${cell.cellID}`);
             }
         });
+
+        // Add cells to container in grid order (layout will position them)
+        // For grid layout, cells should be added in row-major order (row by row, column by column)
+        cellNodes.forEach(({ node, cell }) => {
+            container.addChild(node);
+            this.cellNodesMap.set(cell.cellID, {
+                node: node,
+                cell: cell,
+                cellID: cell.cellID
+            });
+            console.log(`[WalkwayComponent] buildCells - Added cell ${cell.cellID} to container (layout will position it)`);
+        });
+
+        // Update layout to position cells
+        const layout = container.getComponent(Layout);
+        if (layout && layout.enabled) {
+            console.log(`[WalkwayComponent] buildCells - Updating layout to position cells`);
+            layout.updateLayout();
+            console.log(`[WalkwayComponent] buildCells - Layout updated`);
+        }
         
         console.log(`[WalkwayComponent] buildCells - Completed: ${createdCount} created, ${failedCount} failed, total in map: ${this.cellNodesMap.size}`);
     }
@@ -219,6 +329,20 @@ export class WalkwayComponent extends Component {
         if (this.cellPrefab) {
             console.log(`[WalkwayComponent] createCellNode - Using prefab for ${cell.cellID}`);
             cellNode = instantiate(this.cellPrefab);
+            
+            // Ensure cell node has proper UITransform for grid layout
+            let cellTransform = cellNode.getComponent(UITransform);
+            if (cellTransform) {
+                // Update size to match CELL_DIMENSION
+                cellTransform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
+                cellTransform.setAnchorPoint(0.5, 0.5);
+                console.log(`[WalkwayComponent] createCellNode - Updated prefab UITransform: ${CELL_DIMENSION}x${CELL_DIMENSION}`);
+            } else {
+                console.warn(`[WalkwayComponent] createCellNode - Prefab missing UITransform, adding one`);
+                cellTransform = cellNode.addComponent(UITransform);
+                cellTransform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
+                cellTransform.setAnchorPoint(0.5, 0.5);
+            }
         } else {
             console.log(`[WalkwayComponent] createCellNode - Creating node programmatically for ${cell.cellID}`);
             cellNode = new Node(`Cell_${cell.cellID}`);
@@ -239,38 +363,121 @@ export class WalkwayComponent extends Component {
         // Set cell name
         cellNode.name = `Cell_${cell.cellID}`;
 
-        // Position the cell based on row and column
-        // For horizontal walkways (East/West), row is Y, column is X
-        // For vertical walkways (North/South), row is Y, column is X
-        const x = cell.column * CELL_DIMENSION;
-        const y = -cell.row * CELL_DIMENSION; // Negative Y because Cocos uses top-left origin
+        // Store row and column information on the node for grid layout
+        // Don't set position manually - let the grid layout handle it
+        (cellNode as any).cellRow = cell.row;
+        (cellNode as any).cellColumn = cell.column;
         
-        console.log(`[WalkwayComponent] createCellNode - Raw position calculation: x=${x}, y=${y} (row=${cell.row}, column=${cell.column})`);
-        
-        // Adjust position based on walkway orientation
-        let finalX: number, finalY: number;
-        if (this.isHorizontal) {
-            // For horizontal walkways, center the cells
-            const offsetX = (WALKWAY_LENGTH - 1) * CELL_DIMENSION / 2;
-            const offsetY = (WALKWAY_WIDTH - 1) * CELL_DIMENSION / 2;
-            finalX = x - offsetX;
-            finalY = -y + offsetY;
-            console.log(`[WalkwayComponent] createCellNode - Horizontal walkway offsets: offsetX=${offsetX}, offsetY=${offsetY}`);
+        console.log(`[WalkwayComponent] createCellNode - Cell row: ${cell.row}, column: ${cell.column} (position will be set by grid layout)`);
+
+        // Add CellComponent to the cell node
+        console.log(`[WalkwayComponent] createCellNode - Adding CellComponent to ${cell.cellID}`);
+        let cellComponent = cellNode.getComponent(CellComponent);
+        if (!cellComponent) {
+            console.log(`[WalkwayComponent] createCellNode - Creating new CellComponent`);
+            cellComponent = cellNode.addComponent(CellComponent);
         } else {
-            // For vertical walkways, center the cells
-            const offsetX = (WALKWAY_WIDTH - 1) * CELL_DIMENSION / 2;
-            const offsetY = (WALKWAY_VERTICAL_HEIGHT - 1) * CELL_DIMENSION / 2;
-            finalX = x - offsetX;
-            finalY = -y + offsetY;
-            console.log(`[WalkwayComponent] createCellNode - Vertical walkway offsets: offsetX=${offsetX}, offsetY=${offsetY}`);
+            console.log(`[WalkwayComponent] createCellNode - CellComponent already exists`);
+        }
+
+        // Set CellComponent properties
+        if (cellComponent) {
+            cellComponent.cellID = cell.cellID;
+            cellComponent.showDebugText = this.showDebugText;
+            
+            // If prefab has nodeBackground, make sure it's set
+            if (this.cellPrefab) {
+                const backgroundNode = cellNode.getChildByName("background");
+                if (backgroundNode && !cellComponent.nodeBackground) {
+                    cellComponent.nodeBackground = backgroundNode;
+                    console.log(`[WalkwayComponent] createCellNode - Set nodeBackground from prefab`);
+                }
+                
+                // If prefab has circle node, set it as nodeCircleBorder
+                const circleNode = cellNode.getChildByName("circle");
+                if (circleNode && !cellComponent.nodeCircleBorder) {
+                    cellComponent.nodeCircleBorder = circleNode;
+                    console.log(`[WalkwayComponent] createCellNode - Set nodeCircleBorder from prefab`);
+                }
+            }
+            
+            console.log(`[WalkwayComponent] createCellNode - Set CellComponent properties: cellID=${cell.cellID}, showDebugText=${this.showDebugText}`);
+        } else {
+            console.warn(`[WalkwayComponent] createCellNode - Failed to get or create CellComponent`);
+        }
+
+        // Handle Label - check if prefab already has one, otherwise create new
+        let labelNode = cellNode.getChildByName("Label");
+        let cellLabel: Label = null;
+        
+        if (labelNode) {
+            // Prefab already has Label node, use it
+            console.log(`[WalkwayComponent] createCellNode - Using existing Label node from prefab`);
+            cellLabel = labelNode.getComponent(Label);
+            
+            // Update Label UITransform to match cell size
+            const labelTransform = labelNode.getComponent(UITransform);
+            if (labelTransform) {
+                labelTransform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
+                labelTransform.setAnchorPoint(0.5, 0.5);
+            }
+        } else {
+            // Create new Label node if prefab doesn't have one
+            console.log(`[WalkwayComponent] createCellNode - Creating new Label node for cell ID`);
+            labelNode = new Node(`Label_${cell.cellID}`);
+            cellNode.addChild(labelNode);
+            
+            // Add UITransform to label node
+            const labelTransform = labelNode.addComponent(UITransform);
+            labelTransform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
+            labelTransform.setAnchorPoint(0.5, 0.5);
+            labelNode.setPosition(0, 0, 0); // Center in parent
+            
+            // Add Label component
+            cellLabel = labelNode.addComponent(Label);
         }
         
-        cellNode.setPosition(finalX, finalY, 0);
-        console.log(`[WalkwayComponent] createCellNode - Final position set: (${finalX}, ${finalY}, 0) for ${cell.cellID}`);
+        // Configure Label properties (update existing or configure new)
+        if (cellLabel) {
+            // Set text content
+            cellLabel.string = cell.cellID;
+            
+            // Font settings - use system font
+            cellLabel.fontSize = 10; // Small font size to fit in cell
+            cellLabel.fontFamily = "Arial"; // Use system font
+            cellLabel.lineHeight = 12; // Line height
+            
+            // Color settings
+            cellLabel.color = new Color(255, 255, 255, 255); // White color
+            
+            // Outline for visibility
+            cellLabel.enableOutline = true;
+            cellLabel.outlineColor = new Color(0, 0, 0, 255); // Black outline for visibility
+            cellLabel.outlineWidth = 2;
+            
+            // Alignment
+            cellLabel.horizontalAlign = Label.HorizontalAlign.CENTER;
+            cellLabel.verticalAlign = Label.VerticalAlign.CENTER;
+            
+            // Overflow handling
+            cellLabel.overflow = Label.Overflow.SHRINK; // Shrink to fit
+            
+            // Enable wrapping
+            cellLabel.enableWrapText = false; // Don't wrap, keep on one line
+            
+            // Use system font (important for rendering)
+            (cellLabel as any)._isSystemFontUsed = true;
+            (cellLabel as any)._font = null; // Use system font instead of font asset
+            
+            console.log(`[WalkwayComponent] createCellNode - Label configured with cell ID: ${cell.cellID}, fontSize: ${cellLabel.fontSize}, fontFamily: ${cellLabel.fontFamily}`);
+        } else {
+            console.warn(`[WalkwayComponent] createCellNode - Failed to get or create Label component`);
+        }
 
         // Add cell data as user data (optional, for debugging)
         (cellNode as any).cellData = cell;
 
+        console.log(`[WalkwayComponent] createCellNode - Cell node creation complete for ${cell.cellID}`);
         return cellNode;
     }
 
