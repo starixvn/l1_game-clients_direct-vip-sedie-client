@@ -1,0 +1,1666 @@
+/**
+ * Game Board Data
+ * Contains all the board configuration data for the Ludo-style game
+ */
+
+export type BaseColor = "YELLOW" | "GREEN" | "BLUE" | "RED";
+export type Position = "NORTH" | "EAST" | "SOUTH" | "WEST" | "HOME";
+export type CellType = "NORMAL" | "HOMEPATH" | "SPAWN";
+export type RelationshipType = "BASE" | "WALKWAY" | "HOME";
+
+export interface Base {
+  ID: string;
+  horseIDs: string[];
+  color: BaseColor;
+  nextTurn: string;
+  enabled: boolean;
+  hasWon: boolean;
+}
+
+export interface Horse {
+  horseID: string;
+  isRetired: boolean;
+  isSpawned: boolean;
+  baseID: string;
+  steps: number;
+  cellID: string | null;
+  position: Position | null;
+}
+
+export interface Walkway {
+  ID: string;
+  position: Position;
+  baseID: string;
+}
+
+export interface Relationship {
+  ID: string;
+  type: RelationshipType;
+  column: number;
+  baseIDs?: string[];
+}
+
+export interface Cell {
+  baseID: string;
+  cellID: string;
+  column: number;
+  position: Position;
+  row: number;
+  cellType: CellType;
+  horseIDs: string[];
+  index: number;
+  notRenderInWalkway?: boolean;
+}
+
+export interface CellLink {
+  cellID: string;
+  position: Position;
+}
+
+export interface CellsByPosition {
+  [position: string]: {
+    [cellID: string]: Cell;
+  };
+}
+
+export interface Links {
+  [cellID: string]: CellLink[];
+}
+
+export interface GameBoardData {
+  bases: Base[];
+  horses: Horse[];
+  walkways: Walkway[];
+  relationships: Relationship[];
+  cells: CellsByPosition;
+  links: Links;
+}
+
+export const gameBoardData: GameBoardData = {
+  "bases": [
+    {
+      "ID": "BASE_1",
+      "horseIDs": [
+        "BASE_1_HORSE_1",
+        "BASE_1_HORSE_2",
+        "BASE_1_HORSE_3",
+        "BASE_1_HORSE_4"
+      ],
+      "color": "YELLOW",
+      "nextTurn": "BASE_3",
+      "enabled": false,
+      "hasWon": false
+    },
+    {
+      "ID": "BASE_2",
+      "horseIDs": [
+        "BASE_2_HORSE_1",
+        "BASE_2_HORSE_2",
+        "BASE_2_HORSE_3",
+        "BASE_2_HORSE_4"
+      ],
+      "color": "GREEN",
+      "nextTurn": "BASE_1",
+      "enabled": false,
+      "hasWon": false
+    },
+    {
+      "ID": "BASE_3",
+      "horseIDs": [
+        "BASE_3_HORSE_1",
+        "BASE_3_HORSE_2",
+        "BASE_3_HORSE_3",
+        "BASE_3_HORSE_4"
+      ],
+      "color": "BLUE",
+      "nextTurn": "BASE_4",
+      "enabled": false,
+      "hasWon": false
+    },
+    {
+      "ID": "BASE_4",
+      "horseIDs": [
+        "BASE_4_HORSE_1",
+        "BASE_4_HORSE_2",
+        "BASE_4_HORSE_3",
+        "BASE_4_HORSE_4"
+      ],
+      "color": "RED",
+      "nextTurn": "BASE_2",
+      "enabled": false,
+      "hasWon": false
+    }
+  ],
+  "horses": [
+    {
+      "horseID": "BASE_1_HORSE_1",
+      "isRetired": false,
+      "isSpawned": false,
+      "baseID": "BASE_1",
+      "steps": 0,
+      "cellID": null,
+      "position": null
+    },
+    {
+      "horseID": "BASE_1_HORSE_2",
+      "isRetired": false,
+      "isSpawned": false,
+      "baseID": "BASE_1",
+      "steps": 0,
+      "cellID": null,
+      "position": null
+    },
+    {
+      "horseID": "BASE_1_HORSE_3",
+      "isRetired": false,
+      "isSpawned": false,
+      "baseID": "BASE_1",
+      "steps": 0,
+      "cellID": null,
+      "position": null
+    },
+    {
+      "horseID": "BASE_1_HORSE_4",
+      "isRetired": false,
+      "isSpawned": false,
+      "baseID": "BASE_1",
+      "steps": 0,
+      "cellID": null,
+      "position": null
+    },
+    {
+      "horseID": "BASE_2_HORSE_1",
+      "isRetired": false,
+      "isSpawned": false,
+      "baseID": "BASE_2",
+      "steps": 0,
+      "cellID": null,
+      "position": null
+    },
+    {
+      "horseID": "BASE_2_HORSE_2",
+      "isRetired": false,
+      "isSpawned": false,
+      "baseID": "BASE_2",
+      "steps": 0,
+      "cellID": null,
+      "position": null
+    },
+    {
+      "horseID": "BASE_2_HORSE_3",
+      "isRetired": false,
+      "isSpawned": false,
+      "baseID": "BASE_2",
+      "steps": 0,
+      "cellID": null,
+      "position": null
+    },
+    {
+      "horseID": "BASE_2_HORSE_4",
+      "isRetired": false,
+      "isSpawned": false,
+      "baseID": "BASE_2",
+      "steps": 0,
+      "cellID": null,
+      "position": null
+    },
+    {
+      "horseID": "BASE_3_HORSE_1",
+      "isRetired": false,
+      "isSpawned": false,
+      "baseID": "BASE_3",
+      "steps": 0,
+      "cellID": null,
+      "position": null
+    },
+    {
+      "horseID": "BASE_3_HORSE_2",
+      "isRetired": false,
+      "isSpawned": false,
+      "baseID": "BASE_3",
+      "steps": 0,
+      "cellID": null,
+      "position": null
+    },
+    {
+      "horseID": "BASE_3_HORSE_3",
+      "isRetired": false,
+      "isSpawned": false,
+      "baseID": "BASE_3",
+      "steps": 0,
+      "cellID": null,
+      "position": null
+    },
+    {
+      "horseID": "BASE_3_HORSE_4",
+      "isRetired": false,
+      "isSpawned": false,
+      "baseID": "BASE_3",
+      "steps": 0,
+      "cellID": null,
+      "position": null
+    },
+    {
+      "horseID": "BASE_4_HORSE_1",
+      "isRetired": false,
+      "isSpawned": false,
+      "baseID": "BASE_4",
+      "steps": 0,
+      "cellID": null,
+      "position": null
+    },
+    {
+      "horseID": "BASE_4_HORSE_2",
+      "isRetired": false,
+      "isSpawned": false,
+      "baseID": "BASE_4",
+      "steps": 0,
+      "cellID": null,
+      "position": null
+    },
+    {
+      "horseID": "BASE_4_HORSE_3",
+      "isRetired": false,
+      "isSpawned": false,
+      "baseID": "BASE_4",
+      "steps": 0,
+      "cellID": null,
+      "position": null
+    },
+    {
+      "horseID": "BASE_4_HORSE_4",
+      "isRetired": false,
+      "isSpawned": false,
+      "baseID": "BASE_4",
+      "steps": 0,
+      "cellID": null,
+      "position": null
+    }
+  ],
+  "walkways": [
+    {
+      "ID": "WALKWAY_1",
+      "position": "NORTH",
+      "baseID": "BASE_1"
+    },
+    {
+      "ID": "WALKWAY_2",
+      "position": "EAST",
+      "baseID": "BASE_2"
+    },
+    {
+      "ID": "WALKWAY_3",
+      "position": "WEST",
+      "baseID": "BASE_3"
+    },
+    {
+      "ID": "WALKWAY_4",
+      "position": "SOUTH",
+      "baseID": "BASE_4"
+    }
+  ],
+  "relationships": [
+    {
+      "ID": "BASE_1",
+      "type": "BASE",
+      "column": 0
+    },
+    {
+      "ID": "WALKWAY_1",
+      "type": "WALKWAY",
+      "column": 1
+    },
+    {
+      "ID": "BASE_2",
+      "type": "BASE",
+      "column": 2
+    },
+    {
+      "ID": "WALKWAY_3",
+      "type": "WALKWAY",
+      "column": 0
+    },
+    {
+      "ID": "HOME",
+      "type": "HOME",
+      "baseIDs": [
+        "BASE_1",
+        "BASE_3",
+        "BASE_4",
+        "BASE_2"
+      ],
+      "column": 1
+    },
+    {
+      "ID": "WALKWAY_2",
+      "type": "WALKWAY",
+      "column": 2
+    },
+    {
+      "ID": "BASE_3",
+      "type": "BASE",
+      "column": 0
+    },
+    {
+      "ID": "WALKWAY_4",
+      "type": "WALKWAY",
+      "column": 1
+    },
+    {
+      "ID": "BASE_4",
+      "type": "BASE",
+      "column": 2
+    }
+  ],
+  "cells": {
+    "SOUTH": {
+      "SOUTH_5_0": {
+        "baseID": "BASE_3",
+        "cellID": "SOUTH_5_0",
+        "column": 0,
+        "position": "SOUTH",
+        "row": 5,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 26
+      },
+      "SOUTH_5_1": {
+        "baseID": "BASE_4",
+        "cellID": "SOUTH_5_1",
+        "column": 1,
+        "position": "SOUTH",
+        "row": 5,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 257
+      },
+      "SOUTH_5_2": {
+        "baseID": "BASE_4",
+        "cellID": "SOUTH_5_2",
+        "column": 2,
+        "position": "SOUTH",
+        "row": 5,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 30
+      },
+      "SOUTH_6_0": {
+        "baseID": "BASE_3",
+        "cellID": "SOUTH_6_0",
+        "column": 0,
+        "position": "SOUTH",
+        "row": 6,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 27
+      },
+      "SOUTH_6_1": {
+        "baseID": "BASE_4",
+        "cellID": "SOUTH_6_1",
+        "column": 1,
+        "position": "SOUTH",
+        "row": 6,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 28
+      },
+      "SOUTH_6_2": {
+        "baseID": "BASE_4",
+        "cellID": "SOUTH_6_2",
+        "column": 2,
+        "position": "SOUTH",
+        "row": 6,
+        "cellType": "SPAWN",
+        "horseIDs": [],
+        "index": 29
+      },
+      "SOUTH_4_0": {
+        "baseID": "BASE_3",
+        "cellID": "SOUTH_4_0",
+        "column": 0,
+        "position": "SOUTH",
+        "row": 4,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 25
+      },
+      "SOUTH_4_1": {
+        "baseID": "BASE_4",
+        "cellID": "SOUTH_4_1",
+        "column": 1,
+        "position": "SOUTH",
+        "row": 4,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 258
+      },
+      "SOUTH_4_2": {
+        "baseID": "BASE_4",
+        "cellID": "SOUTH_4_2",
+        "column": 2,
+        "position": "SOUTH",
+        "row": 4,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 31
+      },
+      "SOUTH_3_0": {
+        "baseID": "BASE_3",
+        "cellID": "SOUTH_3_0",
+        "column": 0,
+        "position": "SOUTH",
+        "row": 3,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 24
+      },
+      "SOUTH_3_1": {
+        "baseID": "BASE_4",
+        "cellID": "SOUTH_3_1",
+        "column": 1,
+        "position": "SOUTH",
+        "row": 3,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 259
+      },
+      "SOUTH_3_2": {
+        "baseID": "BASE_4",
+        "cellID": "SOUTH_3_2",
+        "column": 2,
+        "position": "SOUTH",
+        "row": 3,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 32
+      },
+      "SOUTH_2_0": {
+        "baseID": "BASE_3",
+        "cellID": "SOUTH_2_0",
+        "column": 0,
+        "position": "SOUTH",
+        "row": 2,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 23
+      },
+      "SOUTH_2_1": {
+        "baseID": "BASE_4",
+        "cellID": "SOUTH_2_1",
+        "column": 1,
+        "position": "SOUTH",
+        "row": 2,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 260
+      },
+      "SOUTH_2_2": {
+        "baseID": "BASE_4",
+        "cellID": "SOUTH_2_2",
+        "column": 2,
+        "position": "SOUTH",
+        "row": 2,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 33
+      },
+      "SOUTH_1_0": {
+        "baseID": "BASE_3",
+        "cellID": "SOUTH_1_0",
+        "column": 0,
+        "position": "SOUTH",
+        "row": 1,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 22
+      },
+      "SOUTH_1_1": {
+        "baseID": "BASE_4",
+        "cellID": "SOUTH_1_1",
+        "column": 1,
+        "position": "SOUTH",
+        "row": 1,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 261
+      },
+      "SOUTH_1_2": {
+        "baseID": "BASE_4",
+        "cellID": "SOUTH_1_2",
+        "column": 2,
+        "position": "SOUTH",
+        "row": 1,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 34
+      },
+      "SOUTH_0_1": {
+        "baseID": "BASE_4",
+        "cellID": "SOUTH_0_1",
+        "column": 1,
+        "position": "SOUTH",
+        "row": 0,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "notRenderInWalkway": true,
+        "index": 262
+      }
+    },
+    "WEST": {
+      "WEST_2_5": {
+        "baseID": "BASE_3",
+        "cellID": "WEST_2_5",
+        "column": 5,
+        "position": "WEST",
+        "row": 2,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 20
+      },
+      "WEST_2_6": {
+        "baseID": "BASE_3",
+        "cellID": "WEST_2_6",
+        "column": 6,
+        "position": "WEST",
+        "row": 2,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 21
+      },
+      "WEST_2_4": {
+        "baseID": "BASE_3",
+        "cellID": "WEST_2_4",
+        "column": 4,
+        "position": "WEST",
+        "row": 2,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 19
+      },
+      "WEST_2_3": {
+        "baseID": "BASE_3",
+        "cellID": "WEST_2_3",
+        "column": 3,
+        "position": "WEST",
+        "row": 2,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 18
+      },
+      "WEST_2_2": {
+        "baseID": "BASE_3",
+        "cellID": "WEST_2_2",
+        "column": 2,
+        "position": "WEST",
+        "row": 2,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 17
+      },
+      "WEST_2_1": {
+        "baseID": "BASE_3",
+        "cellID": "WEST_2_1",
+        "column": 1,
+        "position": "WEST",
+        "row": 2,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 16
+      },
+      "WEST_2_0": {
+        "baseID": "BASE_3",
+        "cellID": "WEST_2_0",
+        "column": 0,
+        "position": "WEST",
+        "row": 2,
+        "cellType": "SPAWN",
+        "horseIDs": [],
+        "index": 15
+      },
+      "WEST_1_0": {
+        "baseID": "BASE_3",
+        "cellID": "WEST_1_0",
+        "column": 0,
+        "position": "WEST",
+        "row": 1,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 14
+      },
+      "WEST_1_1": {
+        "baseID": "BASE_3",
+        "cellID": "WEST_1_1",
+        "column": 1,
+        "position": "WEST",
+        "row": 1,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 157
+      },
+      "WEST_1_2": {
+        "baseID": "BASE_3",
+        "cellID": "WEST_1_2",
+        "column": 2,
+        "position": "WEST",
+        "row": 1,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 158
+      },
+      "WEST_1_3": {
+        "baseID": "BASE_3",
+        "cellID": "WEST_1_3",
+        "column": 3,
+        "position": "WEST",
+        "row": 1,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 159
+      },
+      "WEST_1_4": {
+        "baseID": "BASE_3",
+        "cellID": "WEST_1_4",
+        "column": 4,
+        "position": "WEST",
+        "row": 1,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 160
+      },
+      "WEST_1_5": {
+        "baseID": "BASE_3",
+        "cellID": "WEST_1_5",
+        "column": 5,
+        "position": "WEST",
+        "row": 1,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 161
+      },
+      "WEST_1_6": {
+        "baseID": "BASE_3",
+        "cellID": "WEST_1_6",
+        "column": 6,
+        "position": "WEST",
+        "row": 1,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 162
+      },
+      "WEST_0_0": {
+        "baseID": "BASE_1",
+        "cellID": "WEST_0_0",
+        "column": 0,
+        "position": "WEST",
+        "row": 0,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 13
+      },
+      "WEST_0_1": {
+        "baseID": "BASE_1",
+        "cellID": "WEST_0_1",
+        "column": 1,
+        "position": "WEST",
+        "row": 0,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 12
+      },
+      "WEST_0_2": {
+        "baseID": "BASE_1",
+        "cellID": "WEST_0_2",
+        "column": 2,
+        "position": "WEST",
+        "row": 0,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 11
+      },
+      "WEST_0_3": {
+        "baseID": "BASE_1",
+        "cellID": "WEST_0_3",
+        "column": 3,
+        "position": "WEST",
+        "row": 0,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 10
+      },
+      "WEST_0_4": {
+        "baseID": "BASE_1",
+        "cellID": "WEST_0_4",
+        "column": 4,
+        "position": "WEST",
+        "row": 0,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 9
+      },
+      "WEST_0_5": {
+        "baseID": "BASE_1",
+        "cellID": "WEST_0_5",
+        "column": 5,
+        "position": "WEST",
+        "row": 0,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 8
+      },
+      "WEST_0_6": {
+        "baseID": "BASE_1",
+        "cellID": "WEST_0_6",
+        "column": 6,
+        "position": "WEST",
+        "row": 0,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 7
+      }
+    },
+    "NORTH": {
+      "NORTH_5_0": {
+        "baseID": "BASE_1",
+        "cellID": "NORTH_5_0",
+        "column": 0,
+        "position": "NORTH",
+        "row": 5,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 6
+      },
+      "NORTH_4_0": {
+        "baseID": "BASE_1",
+        "cellID": "NORTH_4_0",
+        "column": 0,
+        "position": "NORTH",
+        "row": 4,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 5
+      },
+      "NORTH_3_0": {
+        "baseID": "BASE_1",
+        "cellID": "NORTH_3_0",
+        "column": 0,
+        "position": "NORTH",
+        "row": 3,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 4
+      },
+      "NORTH_2_0": {
+        "baseID": "BASE_1",
+        "cellID": "NORTH_2_0",
+        "column": 0,
+        "position": "NORTH",
+        "row": 2,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 3
+      },
+      "NORTH_1_0": {
+        "baseID": "BASE_1",
+        "cellID": "NORTH_1_0",
+        "column": 0,
+        "position": "NORTH",
+        "row": 1,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 2
+      },
+      "NORTH_0_0": {
+        "baseID": "BASE_1",
+        "cellID": "NORTH_0_0",
+        "column": 0,
+        "position": "NORTH",
+        "row": 0,
+        "cellType": "SPAWN",
+        "horseIDs": [],
+        "index": 1
+      },
+      "NORTH_0_1": {
+        "baseID": "BASE_1",
+        "cellID": "NORTH_0_1",
+        "column": 1,
+        "position": "NORTH",
+        "row": 0,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 56
+      },
+      "NORTH_1_1": {
+        "baseID": "BASE_1",
+        "cellID": "NORTH_1_1",
+        "column": 1,
+        "position": "NORTH",
+        "row": 1,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 57
+      },
+      "NORTH_2_1": {
+        "baseID": "BASE_1",
+        "cellID": "NORTH_2_1",
+        "column": 1,
+        "position": "NORTH",
+        "row": 2,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 58
+      },
+      "NORTH_3_1": {
+        "baseID": "BASE_1",
+        "cellID": "NORTH_3_1",
+        "column": 1,
+        "position": "NORTH",
+        "row": 3,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 59
+      },
+      "NORTH_4_1": {
+        "baseID": "BASE_1",
+        "cellID": "NORTH_4_1",
+        "column": 1,
+        "position": "NORTH",
+        "row": 4,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 60
+      },
+      "NORTH_5_1": {
+        "baseID": "BASE_1",
+        "cellID": "NORTH_5_1",
+        "column": 1,
+        "position": "NORTH",
+        "row": 5,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 61
+      },
+      "NORTH_0_2": {
+        "baseID": "BASE_2",
+        "cellID": "NORTH_0_2",
+        "column": 2,
+        "position": "NORTH",
+        "row": 0,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 55
+      },
+      "NORTH_1_2": {
+        "baseID": "BASE_2",
+        "cellID": "NORTH_1_2",
+        "column": 2,
+        "position": "NORTH",
+        "row": 1,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 54
+      },
+      "NORTH_2_2": {
+        "baseID": "BASE_2",
+        "cellID": "NORTH_2_2",
+        "column": 2,
+        "position": "NORTH",
+        "row": 2,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 53
+      },
+      "NORTH_3_2": {
+        "baseID": "BASE_2",
+        "cellID": "NORTH_3_2",
+        "column": 2,
+        "position": "NORTH",
+        "row": 3,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 52
+      },
+      "NORTH_4_2": {
+        "baseID": "BASE_2",
+        "cellID": "NORTH_4_2",
+        "column": 2,
+        "position": "NORTH",
+        "row": 4,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 51
+      },
+      "NORTH_5_2": {
+        "baseID": "BASE_2",
+        "cellID": "NORTH_5_2",
+        "column": 2,
+        "position": "NORTH",
+        "row": 5,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 50
+      },
+      "NORTH_6_1": {
+        "baseID": "BASE_1",
+        "cellID": "NORTH_6_1",
+        "column": 1,
+        "position": "NORTH",
+        "row": 6,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "notRenderInWalkway": true,
+        "index": 62
+      }
+    },
+    "EAST": {
+      "EAST_0_0": {
+        "baseID": "BASE_2",
+        "cellID": "EAST_0_0",
+        "column": 0,
+        "position": "EAST",
+        "row": 0,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 49
+      },
+      "EAST_0_1": {
+        "baseID": "BASE_2",
+        "cellID": "EAST_0_1",
+        "column": 1,
+        "position": "EAST",
+        "row": 0,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 48
+      },
+      "EAST_0_2": {
+        "baseID": "BASE_2",
+        "cellID": "EAST_0_2",
+        "column": 2,
+        "position": "EAST",
+        "row": 0,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 47
+      },
+      "EAST_0_3": {
+        "baseID": "BASE_2",
+        "cellID": "EAST_0_3",
+        "column": 3,
+        "position": "EAST",
+        "row": 0,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 46
+      },
+      "EAST_0_4": {
+        "baseID": "BASE_2",
+        "cellID": "EAST_0_4",
+        "column": 4,
+        "position": "EAST",
+        "row": 0,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 45
+      },
+      "EAST_0_5": {
+        "baseID": "BASE_2",
+        "cellID": "EAST_0_5",
+        "column": 5,
+        "position": "EAST",
+        "row": 0,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 44
+      },
+      "EAST_0_6": {
+        "baseID": "BASE_2",
+        "cellID": "EAST_0_6",
+        "column": 6,
+        "position": "EAST",
+        "row": 0,
+        "cellType": "SPAWN",
+        "horseIDs": [],
+        "index": 43
+      },
+      "EAST_1_5": {
+        "baseID": "BASE_2",
+        "cellID": "EAST_1_5",
+        "column": 5,
+        "position": "EAST",
+        "row": 1,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 357
+      },
+      "EAST_1_6": {
+        "baseID": "BASE_2",
+        "cellID": "EAST_1_6",
+        "column": 6,
+        "position": "EAST",
+        "row": 1,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 42
+      },
+      "EAST_1_4": {
+        "baseID": "BASE_2",
+        "cellID": "EAST_1_4",
+        "column": 4,
+        "position": "EAST",
+        "row": 1,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 358
+      },
+      "EAST_1_3": {
+        "baseID": "BASE_2",
+        "cellID": "EAST_1_3",
+        "column": 3,
+        "position": "EAST",
+        "row": 1,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 359
+      },
+      "EAST_1_2": {
+        "baseID": "BASE_2",
+        "cellID": "EAST_1_2",
+        "column": 2,
+        "position": "EAST",
+        "row": 1,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 360
+      },
+      "EAST_1_1": {
+        "baseID": "BASE_2",
+        "cellID": "EAST_1_1",
+        "column": 1,
+        "position": "EAST",
+        "row": 1,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 361
+      },
+      "EAST_1_0": {
+        "baseID": "BASE_2",
+        "cellID": "EAST_1_0",
+        "column": 0,
+        "position": "EAST",
+        "row": 1,
+        "cellType": "HOMEPATH",
+        "horseIDs": [],
+        "index": 362
+      },
+      "EAST_2_0": {
+        "baseID": "BASE_4",
+        "cellID": "EAST_2_0",
+        "column": 0,
+        "position": "EAST",
+        "row": 2,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 35
+      },
+      "EAST_2_1": {
+        "baseID": "BASE_4",
+        "cellID": "EAST_2_1",
+        "column": 1,
+        "position": "EAST",
+        "row": 2,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 36
+      },
+      "EAST_2_2": {
+        "baseID": "BASE_4",
+        "cellID": "EAST_2_2",
+        "column": 2,
+        "position": "EAST",
+        "row": 2,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 37
+      },
+      "EAST_2_3": {
+        "baseID": "BASE_4",
+        "cellID": "EAST_2_3",
+        "column": 3,
+        "position": "EAST",
+        "row": 2,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 38
+      },
+      "EAST_2_4": {
+        "baseID": "BASE_4",
+        "cellID": "EAST_2_4",
+        "column": 4,
+        "position": "EAST",
+        "row": 2,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 39
+      },
+      "EAST_2_5": {
+        "baseID": "BASE_4",
+        "cellID": "EAST_2_5",
+        "column": 5,
+        "position": "EAST",
+        "row": 2,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 40
+      },
+      "EAST_2_6": {
+        "baseID": "BASE_4",
+        "cellID": "EAST_2_6",
+        "column": 6,
+        "position": "EAST",
+        "row": 2,
+        "cellType": "NORMAL",
+        "horseIDs": [],
+        "index": 41
+      }
+    }
+  },
+  "links": {
+    "SOUTH_6_0": [
+      {
+        "cellID": "SOUTH_6_1",
+        "position": "SOUTH"
+      }
+    ],
+    "SOUTH_5_0": [
+      {
+        "cellID": "SOUTH_6_0",
+        "position": "SOUTH"
+      }
+    ],
+    "SOUTH_4_0": [
+      {
+        "cellID": "SOUTH_5_0",
+        "position": "SOUTH"
+      }
+    ],
+    "SOUTH_3_0": [
+      {
+        "cellID": "SOUTH_4_0",
+        "position": "SOUTH"
+      }
+    ],
+    "SOUTH_2_0": [
+      {
+        "cellID": "SOUTH_3_0",
+        "position": "SOUTH"
+      }
+    ],
+    "SOUTH_1_0": [
+      {
+        "cellID": "SOUTH_2_0",
+        "position": "SOUTH"
+      }
+    ],
+    "WEST_2_6": [
+      {
+        "cellID": "SOUTH_1_0",
+        "position": "SOUTH"
+      }
+    ],
+    "WEST_2_5": [
+      {
+        "cellID": "WEST_2_6",
+        "position": "WEST"
+      }
+    ],
+    "WEST_2_4": [
+      {
+        "cellID": "WEST_2_5",
+        "position": "WEST"
+      }
+    ],
+    "WEST_2_3": [
+      {
+        "cellID": "WEST_2_4",
+        "position": "WEST"
+      }
+    ],
+    "WEST_2_2": [
+      {
+        "cellID": "WEST_2_3",
+        "position": "WEST"
+      }
+    ],
+    "WEST_2_1": [
+      {
+        "cellID": "WEST_2_2",
+        "position": "WEST"
+      }
+    ],
+    "WEST_2_0": [
+      {
+        "cellID": "WEST_2_1",
+        "position": "WEST"
+      }
+    ],
+    "WEST_0_0": [
+      {
+        "cellID": "WEST_1_0",
+        "position": "WEST"
+      }
+    ],
+    "WEST_1_0": [
+      {
+        "cellID": "WEST_2_0",
+        "position": "WEST"
+      },
+      {
+        "cellID": "WEST_1_1",
+        "position": "WEST"
+      }
+    ],
+    "WEST_1_1": [
+      {
+        "cellID": "WEST_1_2",
+        "position": "WEST"
+      }
+    ],
+    "WEST_1_2": [
+      {
+        "cellID": "WEST_1_3",
+        "position": "WEST"
+      }
+    ],
+    "WEST_1_3": [
+      {
+        "cellID": "WEST_1_4",
+        "position": "WEST"
+      }
+    ],
+    "WEST_1_4": [
+      {
+        "cellID": "WEST_1_5",
+        "position": "WEST"
+      }
+    ],
+    "WEST_1_5": [
+      {
+        "cellID": "WEST_1_6",
+        "position": "WEST"
+      }
+    ],
+    "WEST_1_6": [
+      {
+        "cellID": "HOME",
+        "position": "HOME"
+      }
+    ],
+    "WEST_0_1": [
+      {
+        "cellID": "WEST_0_0",
+        "position": "WEST"
+      }
+    ],
+    "WEST_0_2": [
+      {
+        "cellID": "WEST_0_1",
+        "position": "WEST"
+      }
+    ],
+    "WEST_0_3": [
+      {
+        "cellID": "WEST_0_2",
+        "position": "WEST"
+      }
+    ],
+    "WEST_0_4": [
+      {
+        "cellID": "WEST_0_3",
+        "position": "WEST"
+      }
+    ],
+    "WEST_0_5": [
+      {
+        "cellID": "WEST_0_4",
+        "position": "WEST"
+      }
+    ],
+    "WEST_0_6": [
+      {
+        "cellID": "WEST_0_5",
+        "position": "WEST"
+      }
+    ],
+    "NORTH_4_0": [
+      {
+        "cellID": "NORTH_5_0",
+        "position": "NORTH"
+      }
+    ],
+    "NORTH_3_0": [
+      {
+        "cellID": "NORTH_4_0",
+        "position": "NORTH"
+      }
+    ],
+    "NORTH_2_0": [
+      {
+        "cellID": "NORTH_3_0",
+        "position": "NORTH"
+      }
+    ],
+    "NORTH_1_0": [
+      {
+        "cellID": "NORTH_2_0",
+        "position": "NORTH"
+      }
+    ],
+    "NORTH_0_0": [
+      {
+        "cellID": "NORTH_1_0",
+        "position": "NORTH"
+      }
+    ],
+    "NORTH_0_1": [
+      {
+        "cellID": "NORTH_0_0",
+        "position": "NORTH"
+      },
+      {
+        "cellID": "NORTH_1_1",
+        "position": "NORTH"
+      }
+    ],
+    "NORTH_0_2": [
+      {
+        "cellID": "NORTH_0_1",
+        "position": "NORTH"
+      }
+    ],
+    "NORTH_1_1": [
+      {
+        "cellID": "NORTH_2_1",
+        "position": "NORTH"
+      }
+    ],
+    "NORTH_2_1": [
+      {
+        "cellID": "NORTH_3_1",
+        "position": "NORTH"
+      }
+    ],
+    "NORTH_3_1": [
+      {
+        "cellID": "NORTH_4_1",
+        "position": "NORTH"
+      }
+    ],
+    "NORTH_4_1": [
+      {
+        "cellID": "NORTH_5_1",
+        "position": "NORTH"
+      }
+    ],
+    "NORTH_5_1": [
+      {
+        "cellID": "NORTH_6_1",
+        "position": "NORTH"
+      }
+    ],
+    "NORTH_1_2": [
+      {
+        "cellID": "NORTH_0_2",
+        "position": "NORTH"
+      }
+    ],
+    "NORTH_2_2": [
+      {
+        "cellID": "NORTH_1_2",
+        "position": "NORTH"
+      }
+    ],
+    "NORTH_3_2": [
+      {
+        "cellID": "NORTH_2_2",
+        "position": "NORTH"
+      }
+    ],
+    "NORTH_4_2": [
+      {
+        "cellID": "NORTH_3_2",
+        "position": "NORTH"
+      }
+    ],
+    "NORTH_5_2": [
+      {
+        "cellID": "NORTH_4_2",
+        "position": "NORTH"
+      }
+    ],
+    "EAST_0_0": [
+      {
+        "cellID": "NORTH_5_2",
+        "position": "NORTH"
+      }
+    ],
+    "NORTH_6_1": [
+      {
+        "cellID": "HOME",
+        "position": "HOME"
+      }
+    ],
+    "NORTH_5_0": [
+      {
+        "cellID": "WEST_0_6",
+        "position": "WEST"
+      }
+    ],
+    "EAST_0_1": [
+      {
+        "cellID": "EAST_0_0",
+        "position": "EAST"
+      }
+    ],
+    "EAST_0_2": [
+      {
+        "cellID": "EAST_0_1",
+        "position": "EAST"
+      }
+    ],
+    "EAST_0_3": [
+      {
+        "cellID": "EAST_0_2",
+        "position": "EAST"
+      }
+    ],
+    "EAST_0_4": [
+      {
+        "cellID": "EAST_0_3",
+        "position": "EAST"
+      }
+    ],
+    "EAST_0_5": [
+      {
+        "cellID": "EAST_0_4",
+        "position": "EAST"
+      }
+    ],
+    "EAST_0_6": [
+      {
+        "cellID": "EAST_0_5",
+        "position": "EAST"
+      }
+    ],
+    "EAST_1_6": [
+      {
+        "cellID": "EAST_1_5",
+        "position": "EAST"
+      },
+      {
+        "cellID": "EAST_0_6",
+        "position": "EAST"
+      }
+    ],
+    "EAST_1_4": [
+      {
+        "cellID": "EAST_1_3",
+        "position": "EAST"
+      }
+    ],
+    "EAST_1_5": [
+      {
+        "cellID": "EAST_1_4",
+        "position": "EAST"
+      }
+    ],
+    "EAST_1_3": [
+      {
+        "cellID": "EAST_1_2",
+        "position": "EAST"
+      }
+    ],
+    "EAST_1_2": [
+      {
+        "cellID": "EAST_1_1",
+        "position": "EAST"
+      }
+    ],
+    "EAST_1_1": [
+      {
+        "cellID": "EAST_1_0",
+        "position": "EAST"
+      }
+    ],
+    "EAST_1_0": [
+      {
+        "cellID": "HOME",
+        "position": "HOME"
+      }
+    ],
+    "EAST_2_4": [
+      {
+        "cellID": "EAST_2_5",
+        "position": "EAST"
+      }
+    ],
+    "EAST_2_5": [
+      {
+        "cellID": "EAST_2_6",
+        "position": "EAST"
+      }
+    ],
+    "EAST_2_6": [
+      {
+        "cellID": "EAST_1_6",
+        "position": "EAST"
+      }
+    ],
+    "EAST_2_3": [
+      {
+        "cellID": "EAST_2_4",
+        "position": "EAST"
+      }
+    ],
+    "EAST_2_2": [
+      {
+        "cellID": "EAST_2_3",
+        "position": "EAST"
+      }
+    ],
+    "EAST_2_1": [
+      {
+        "cellID": "EAST_2_2",
+        "position": "EAST"
+      }
+    ],
+    "EAST_2_0": [
+      {
+        "cellID": "EAST_2_1",
+        "position": "EAST"
+      }
+    ],
+    "SOUTH_1_2": [
+      {
+        "cellID": "EAST_2_0",
+        "position": "EAST"
+      }
+    ],
+    "SOUTH_2_2": [
+      {
+        "cellID": "SOUTH_1_2",
+        "position": "SOUTH"
+      }
+    ],
+    "SOUTH_3_2": [
+      {
+        "cellID": "SOUTH_2_2",
+        "position": "SOUTH"
+      }
+    ],
+    "SOUTH_4_2": [
+      {
+        "cellID": "SOUTH_3_2",
+        "position": "SOUTH"
+      }
+    ],
+    "SOUTH_5_2": [
+      {
+        "cellID": "SOUTH_4_2",
+        "position": "SOUTH"
+      }
+    ],
+    "SOUTH_6_2": [
+      {
+        "cellID": "SOUTH_5_2",
+        "position": "SOUTH"
+      }
+    ],
+    "SOUTH_6_1": [
+      {
+        "cellID": "SOUTH_6_2",
+        "position": "SOUTH"
+      },
+      {
+        "cellID": "SOUTH_5_1",
+        "position": "SOUTH"
+      }
+    ],
+    "SOUTH_5_1": [
+      {
+        "cellID": "SOUTH_4_1",
+        "position": "SOUTH"
+      }
+    ],
+    "SOUTH_4_1": [
+      {
+        "cellID": "SOUTH_3_1",
+        "position": "SOUTH"
+      }
+    ],
+    "SOUTH_3_1": [
+      {
+        "cellID": "SOUTH_2_1",
+        "position": "SOUTH"
+      }
+    ],
+    "SOUTH_2_1": [
+      {
+        "cellID": "SOUTH_1_1",
+        "position": "SOUTH"
+      }
+    ],
+    "SOUTH_1_1": [
+      {
+        "cellID": "SOUTH_0_1",
+        "position": "SOUTH"
+      }
+    ],
+    "SOUTH_0_1": [
+      {
+        "cellID": "HOME",
+        "position": "HOME"
+      }
+    ]
+  }
+};
+
