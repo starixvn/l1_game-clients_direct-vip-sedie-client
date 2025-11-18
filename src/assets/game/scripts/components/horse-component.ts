@@ -84,6 +84,12 @@ export class HorseComponent extends Component {
     /** Current animation tween */
     private animationTween: any = null;
 
+    /** Whether auto-movement is enabled */
+    private isAutoMoving: boolean = false;
+
+    /** Auto-movement interval in seconds */
+    private readonly AUTO_MOVE_INTERVAL: number = 1.0;
+
     /** Unicode character for chess knight (♞) */
     private readonly HORSE_UNICODE = "\u265E";
 
@@ -415,12 +421,12 @@ export class HorseComponent extends Component {
     }
 
     /**
-     * Handle click on HorseIcon - move horse to SPAWN cell
+     * Handle click on HorseIcon - move horse to SPAWN cell or next cell in walkway
      */
     private onHorseIconClick() {
         console.log(`[HorseComponent] onHorseIconClick - Horse clicked: ${this.horseID}, baseColor: ${this.baseColor}`);
         
-        // Find the horse data to get baseID
+        // Find the horse data to get baseID and current position
         const horseData = gameBoardData.horses.find(h => h.horseID === this.horseID);
         if (!horseData) {
             console.warn(`[HorseComponent] onHorseIconClick - Horse data not found for ${this.horseID}`);
@@ -436,24 +442,308 @@ export class HorseComponent extends Component {
             return;
         }
 
-        // Find SPAWN cell for this base
-        const spawnCell = this.findSpawnCellForBase(baseID);
-        if (!spawnCell) {
-            console.warn(`[HorseComponent] onHorseIconClick - SPAWN cell not found for base ${baseID}`);
+        // Check if horse is already spawned (in a walkway cell)
+        if (horseData.isSpawned && horseData.cellID) {
+            console.log(`[HorseComponent] onHorseIconClick - Horse is already spawned at cell ${horseData.cellID}, moving to next cell`);
+            
+            // Find the next cell based on links
+            const nextCell = this.findNextCell(horseData.cellID);
+            if (!nextCell) {
+                console.warn(`[HorseComponent] onHorseIconClick - No next cell found for ${horseData.cellID}`);
+                return;
+            }
+
+            console.log(`[HorseComponent] onHorseIconClick - Moving to next cell: ${nextCell.cellID}`);
+
+            // Find the cell node in the scene
+            const targetPosition = this.findCellNodePosition(nextCell.cellID);
+            if (!targetPosition) {
+                console.warn(`[HorseComponent] onHorseIconClick - Cell node not found in scene for ${nextCell.cellID}`);
+                return;
+            }
+
+            // Move horse to next cell using tween
+            this.moveHorseToPosition(targetPosition, () => {
+                // Update horse data after movement completes
+                this.updateHorseDataAfterMove(nextCell);
+            });
+        } else {
+            // Horse is not spawned, move to SPAWN cell
+            console.log(`[HorseComponent] onHorseIconClick - Horse is not spawned, moving to SPAWN cell`);
+
+            // Find SPAWN cell for this base
+            const spawnCell = this.findSpawnCellForBase(baseID);
+            if (!spawnCell) {
+                console.warn(`[HorseComponent] onHorseIconClick - SPAWN cell not found for base ${baseID}`);
+                return;
+            }
+
+            console.log(`[HorseComponent] onHorseIconClick - Found SPAWN cell: ${spawnCell.cellID} for base ${baseID}`);
+
+            // Find the cell node in the scene
+            const targetPosition = this.findCellNodePosition(spawnCell.cellID);
+            if (!targetPosition) {
+                console.warn(`[HorseComponent] onHorseIconClick - Cell node not found in scene for ${spawnCell.cellID}`);
+                return;
+            }
+
+            // Move horse to SPAWN cell using tween
+            this.moveHorseToPosition(targetPosition, () => {
+                // Update horse data after movement completes
+                this.updateHorseDataAfterMove(spawnCell);
+                // Start auto-movement after reaching SPAWN cell
+                this.startAutoMovement();
+            });
+        }
+    }
+
+    /**
+     * Find the next cell based on links from the current cell
+     * Chooses the correct path based on the horse's base when multiple links exist
+     */
+    private findNextCell(currentCellID: string): Cell | null {
+        // Get links for the current cell
+        const links = gameBoardData.links[currentCellID];
+        if (!links || links.length === 0) {
+            console.warn(`[HorseComponent] findNextCell - No links found for cell ${currentCellID}`);
+            return null;
+        }
+
+        // Get horse's baseID to determine which path to take
+        const horseData = gameBoardData.horses.find(h => h.horseID === this.horseID);
+        const baseID = horseData ? horseData.baseID : null;
+
+        // If only one link, use it
+        if (links.length === 1) {
+            const nextLink = links[0];
+            return this.getCellFromLink(nextLink);
+        }
+
+        // Multiple links - need to choose the correct one based on base
+        console.log(`[HorseComponent] findNextCell - Multiple links found for ${currentCellID}, choosing based on base ${baseID}`);
+
+        // Get current cell to understand context
+        const currentCell = this.getCurrentCell(currentCellID);
+        if (!currentCell) {
+            console.warn(`[HorseComponent] findNextCell - Current cell not found: ${currentCellID}`);
+            // Fallback to first link
+            return this.getCellFromLink(links[0]);
+        }
+
+        // Strategy for choosing the correct path:
+        // 1. If current cell is SPAWN, prefer the main walkway link (not home path)
+        // 2. If current cell belongs to this horse's base AND is at a junction:
+        //    - Prefer the home path link if it belongs to this horse's base
+        //    - Otherwise, continue on main walkway
+        // 3. If current cell doesn't belong to this horse's base, continue on main walkway
+        // 4. Otherwise, prefer links that belong to the horse's base
+
+        if (currentCell.cellType === GAME_CONSTANTS.CELL_TYPE_SPAWN) {
+            // At SPAWN cell - prefer main walkway (not home path)
+            for (const link of links) {
+                const nextCell = this.getCellFromLink(link);
+                if (nextCell && nextCell.cellType !== GAME_CONSTANTS.CELL_TYPE_HOMEPATH) {
+                    console.log(`[HorseComponent] findNextCell - At SPAWN, choosing main walkway: ${nextCell.cellID}`);
+                    return nextCell;
+                }
+            }
+        }
+
+        // Check if current cell belongs to this horse's base (junction cell)
+        if (baseID && currentCell.baseID === baseID) {
+            // At a junction cell that belongs to this horse's base
+            // Prefer the home path link if it belongs to this horse's base
+            for (const link of links) {
+                const nextCell = this.getCellFromLink(link);
+                if (nextCell && nextCell.cellType === GAME_CONSTANTS.CELL_TYPE_HOMEPATH && nextCell.baseID === baseID) {
+                    console.log(`[HorseComponent] findNextCell - At junction for base ${baseID}, choosing home path: ${nextCell.cellID}`);
+                    return nextCell;
+                }
+            }
+            // If no home path found, continue on main walkway (prefer non-homepath cells)
+            for (const link of links) {
+                const nextCell = this.getCellFromLink(link);
+                if (nextCell && nextCell.cellType !== GAME_CONSTANTS.CELL_TYPE_HOMEPATH) {
+                    console.log(`[HorseComponent] findNextCell - At junction for base ${baseID}, continuing on main walkway: ${nextCell.cellID}`);
+                    return nextCell;
+                }
+            }
+        }
+
+        // If current cell doesn't belong to this horse's base, prefer main walkway (not home path)
+        if (baseID && currentCell.baseID !== baseID) {
+            for (const link of links) {
+                const nextCell = this.getCellFromLink(link);
+                if (nextCell && nextCell.cellType !== GAME_CONSTANTS.CELL_TYPE_HOMEPATH) {
+                    console.log(`[HorseComponent] findNextCell - Not at own base, choosing main walkway: ${nextCell.cellID}`);
+                    return nextCell;
+                }
+            }
+        }
+
+        // Check if any link leads to a home path cell that belongs to this horse's base
+        if (baseID) {
+            for (const link of links) {
+                const nextCell = this.getCellFromLink(link);
+                if (nextCell && nextCell.cellType === GAME_CONSTANTS.CELL_TYPE_HOMEPATH && nextCell.baseID === baseID) {
+                    console.log(`[HorseComponent] findNextCell - Found home path for base ${baseID}: ${nextCell.cellID}`);
+                    return nextCell;
+                }
+            }
+        }
+
+        // If no home path found for this base, prefer links that belong to this horse's base
+        if (baseID) {
+            for (const link of links) {
+                const nextCell = this.getCellFromLink(link);
+                if (nextCell && nextCell.baseID === baseID) {
+                    console.log(`[HorseComponent] findNextCell - Found cell for base ${baseID}: ${nextCell.cellID}`);
+                    return nextCell;
+                }
+            }
+        }
+
+        // Fallback: use first link
+        console.log(`[HorseComponent] findNextCell - No base-specific link found, using first link`);
+        return this.getCellFromLink(links[0]);
+    }
+
+    /**
+     * Get cell from a link
+     */
+    private getCellFromLink(link: { cellID: string; position: string }): Cell | null {
+        const positionCells = gameBoardData.cells[link.position];
+        if (!positionCells) {
+            console.warn(`[HorseComponent] getCellFromLink - Position ${link.position} not found in cells`);
+            return null;
+        }
+
+        const cell = positionCells[link.cellID];
+        if (!cell) {
+            console.warn(`[HorseComponent] getCellFromLink - Cell ${link.cellID} not found in position ${link.position}`);
+            return null;
+        }
+
+        return cell;
+    }
+
+    /**
+     * Get current cell data
+     */
+    private getCurrentCell(cellID: string): Cell | null {
+        // Search through all positions for the cell
+        for (const position in gameBoardData.cells) {
+            const positionCells = gameBoardData.cells[position];
+            if (positionCells[cellID]) {
+                return positionCells[cellID];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Update horse data after movement completes
+     */
+    private updateHorseDataAfterMove(targetCell: Cell) {
+        const horseData = gameBoardData.horses.find(h => h.horseID === this.horseID);
+        if (!horseData) {
+            console.warn(`[HorseComponent] updateHorseDataAfterMove - Horse data not found for ${this.horseID}`);
             return;
         }
 
-        console.log(`[HorseComponent] onHorseIconClick - Found SPAWN cell: ${spawnCell.cellID} for base ${baseID}`);
+        // Update horse data
+        horseData.cellID = targetCell.cellID;
+        horseData.position = targetCell.position;
+        horseData.isSpawned = true;
+        horseData.steps += 1;
+
+        console.log(`[HorseComponent] updateHorseDataAfterMove - Updated horse ${this.horseID} to cell ${targetCell.cellID}, position ${targetCell.position}, steps: ${horseData.steps}`);
+    }
+
+    /**
+     * Start auto-movement - horse will move every 1 second automatically
+     */
+    private startAutoMovement() {
+        if (this.isAutoMoving) {
+            console.log(`[HorseComponent] startAutoMovement - Auto-movement already started`);
+            return;
+        }
+
+        this.isAutoMoving = true;
+        console.log(`[HorseComponent] startAutoMovement - Starting auto-movement with interval ${this.AUTO_MOVE_INTERVAL}s`);
+
+        // Schedule auto-movement
+        this.schedule(this.autoMoveToNextCell, this.AUTO_MOVE_INTERVAL);
+    }
+
+    /**
+     * Stop auto-movement
+     */
+    private stopAutoMovement() {
+        if (!this.isAutoMoving) {
+            return;
+        }
+
+        this.isAutoMoving = false;
+        this.unschedule(this.autoMoveToNextCell);
+        console.log(`[HorseComponent] stopAutoMovement - Stopped auto-movement`);
+    }
+
+    /**
+     * Auto-move to next cell (called by schedule)
+     */
+    private autoMoveToNextCell() {
+        if (!this.isAutoMoving) {
+            return;
+        }
+
+        const horseData = gameBoardData.horses.find(h => h.horseID === this.horseID);
+        if (!horseData || !horseData.cellID) {
+            console.warn(`[HorseComponent] autoMoveToNextCell - Horse data not found or not spawned`);
+            this.stopAutoMovement();
+            return;
+        }
+
+        // Check if current cell links to HOME
+        const links = gameBoardData.links[horseData.cellID];
+        if (!links || links.length === 0) {
+            console.log(`[HorseComponent] autoMoveToNextCell - No more links, stopping auto-movement`);
+            this.stopAutoMovement();
+            return;
+        }
+
+        // Check if next link is HOME
+        const nextLink = links[0];
+        if (nextLink.position === GAME_CONSTANTS.POSITION_HOME) {
+            console.log(`[HorseComponent] autoMoveToNextCell - Reached HOME, stopping auto-movement`);
+            this.stopAutoMovement();
+            return;
+        }
+
+        // Find the next cell
+        const nextCell = this.findNextCell(horseData.cellID);
+        if (!nextCell) {
+            console.warn(`[HorseComponent] autoMoveToNextCell - No next cell found, stopping auto-movement`);
+            this.stopAutoMovement();
+            return;
+        }
+
+        console.log(`[HorseComponent] autoMoveToNextCell - Auto-moving to next cell: ${nextCell.cellID}`);
 
         // Find the cell node in the scene
-        const targetPosition = this.findCellNodePosition(spawnCell.cellID);
+        const targetPosition = this.findCellNodePosition(nextCell.cellID);
         if (!targetPosition) {
-            console.warn(`[HorseComponent] onHorseIconClick - Cell node not found in scene for ${spawnCell.cellID}`);
+            console.warn(`[HorseComponent] autoMoveToNextCell - Cell node not found in scene for ${nextCell.cellID}`);
+            this.stopAutoMovement();
             return;
         }
 
-        // Move horse to SPAWN cell using tween
-        this.moveHorseToPosition(targetPosition);
+        // Move horse to next cell using tween
+        this.moveHorseToPosition(targetPosition, () => {
+            // Update horse data after movement completes
+            this.updateHorseDataAfterMove(nextCell);
+            // Continue auto-movement (schedule will call this again after interval)
+        });
     }
 
     /**
@@ -520,8 +810,10 @@ export class HorseComponent extends Component {
 
     /**
      * Move horse icon to target position using tween animation
+     * @param targetPosition Target world position to move to
+     * @param onComplete Optional callback when movement completes
      */
-    private moveHorseToPosition(targetPosition: Vec3) {
+    private moveHorseToPosition(targetPosition: Vec3, onComplete?: () => void) {
         if (!this.nodeHorseIcon) {
             console.warn(`[HorseComponent] moveHorseToPosition - HorseIcon node not found`);
             return;
@@ -563,9 +855,11 @@ export class HorseComponent extends Component {
             // Convert world position to local position relative to new parent
             const localPos = new Vec3();
             topLayer.inverseTransformPoint(localPos, worldPos);
+            // Set z-index to very negative value to ensure it renders above cell labels
+            localPos.z = -1000;
             this.nodeHorseIcon.setPosition(localPos);
             
-            console.log(`[HorseComponent] moveHorseToPosition - Reparented HorseIcon to top layer for rendering on top`);
+            console.log(`[HorseComponent] moveHorseToPosition - Reparented HorseIcon to top layer with z-index ${localPos.z} for rendering on top`);
         }
 
         // Get current world position of HorseIcon
@@ -578,20 +872,20 @@ export class HorseComponent extends Component {
         const localTargetPos = new Vec3();
         this.nodeHorseIcon.parent?.inverseTransformPoint(localTargetPos, targetPosition);
 
-        // Set a higher z-index to ensure it renders on top
+        // Set a very negative z-index to ensure it renders on top of everything
         // Negative z means closer to camera (renders on top in 2D)
-        localTargetPos.z = -100;
+        // Use a very negative value to ensure it's above cell labels
+        localTargetPos.z = -1000;
 
         // Move to end of parent's children list (renders last = on top)
-        // This ensures the HorseIcon renders above other nodes
+        // This ensures the HorseIcon renders above other nodes including cell labels
         if (this.nodeHorseIcon.parent) {
             const parent = this.nodeHorseIcon.parent;
             const currentIndex = parent.children.indexOf(this.nodeHorseIcon);
-            if (currentIndex >= 0 && currentIndex < parent.children.length - 1) {
-                // Move to the end (highest render order)
-                parent.removeChild(this.nodeHorseIcon);
-                parent.addChild(this.nodeHorseIcon);
-            }
+            // Always move to the end to ensure it renders on top
+            parent.removeChild(this.nodeHorseIcon);
+            parent.addChild(this.nodeHorseIcon);
+            console.log(`[HorseComponent] moveHorseToPosition - Moved HorseIcon to end of parent's children (index: ${parent.children.length - 1})`);
         }
 
         // Animate movement with tween - move only the HorseIcon node
@@ -604,11 +898,18 @@ export class HorseComponent extends Component {
             .call(() => {
                 console.log(`[HorseComponent] moveHorseToPosition - HorseIcon movement completed`);
                 this.animationTween = null;
+                // Call onComplete callback if provided
+                if (onComplete) {
+                    onComplete();
+                }
             })
             .start();
     }
 
     onDestroy() {
+        // Stop auto-movement
+        this.stopAutoMovement();
+
         // Remove click event listener
         if (this.nodeHorseIcon) {
             const iconButton = this.nodeHorseIcon.getComponent(Button);

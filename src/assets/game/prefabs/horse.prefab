@@ -212,13 +212,13 @@
     "_dstBlendFactor": 4,
     "_color": {
       "__type__": "cc.Color",
-      "r": 69,
-      "g": 105,
-      "b": 122,
+      "r": 122,
+      "g": 69,
+      "b": 69,
       "a": 168
     },
     "_spriteFrame": {
-      "__uuid__": "908d368a-53a1-40a8-b11d-b15a61a9f87f@f9941",
+      "__uuid__": "d3e79d22-2c1d-4bc2-8e1d-728cf2d59341@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_type": 0,
@@ -338,6 +338,8 @@
       "__id__": 0
     },
     "fileId": "e67G1dOCVAPayLiWQ4v2mw",
+    "instance": null,
+    "targetOverrides": null,
     "nestedPrefabInstanceRoots": null
   },
   {
