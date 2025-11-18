@@ -11,8 +11,10 @@
  * Data is read from game-board-data.ts
  */
 
-import { _decorator, Component, Node, Label, UITransform, tween, Vec3, Color, Sprite } from "cc";
-import { BaseColor } from "../game-board-data";
+import { _decorator, Component, Node, Label, UITransform, tween, Vec3, Color, Sprite, Button } from "cc";
+import { BaseColor, gameBoardData, Horse, Cell } from "../game-board-data";
+import { GAME_CONSTANTS } from "../game-board-data";
+import { WalkwayComponent } from "./walkway-component";
 import { 
     CELL_DIMENSION,
     BASE_COLORS 
@@ -148,6 +150,15 @@ export class HorseComponent extends Component {
         if (!iconSprite) {
             iconSprite = this.nodeHorseIcon.addComponent(Sprite);
         }
+
+        // Add Button component to HorseIcon for click events
+        let iconButton = this.nodeHorseIcon.getComponent(Button);
+        if (!iconButton) {
+            iconButton = this.nodeHorseIcon.addComponent(Button);
+        }
+        
+        // Set up click event handler
+        iconButton.node.on(Button.EventType.CLICK, this.onHorseIconClick, this);
 
         // Create or get horse number label
         const horseNumber = this.extractHorseNumber(this.horseID);
@@ -403,7 +414,209 @@ export class HorseComponent extends Component {
         return this.extractHorseNumber(this.horseID);
     }
 
+    /**
+     * Handle click on HorseIcon - move horse to SPAWN cell
+     */
+    private onHorseIconClick() {
+        console.log(`[HorseComponent] onHorseIconClick - Horse clicked: ${this.horseID}, baseColor: ${this.baseColor}`);
+        
+        // Find the horse data to get baseID
+        const horseData = gameBoardData.horses.find(h => h.horseID === this.horseID);
+        if (!horseData) {
+            console.warn(`[HorseComponent] onHorseIconClick - Horse data not found for ${this.horseID}`);
+            return;
+        }
+
+        // Find the base to get baseID
+        const base = gameBoardData.bases.find(b => b.color === this.baseColor);
+        const baseID = base ? base.ID : horseData.baseID;
+        
+        if (!baseID) {
+            console.warn(`[HorseComponent] onHorseIconClick - Base ID not found for horse ${this.horseID}`);
+            return;
+        }
+
+        // Find SPAWN cell for this base
+        const spawnCell = this.findSpawnCellForBase(baseID);
+        if (!spawnCell) {
+            console.warn(`[HorseComponent] onHorseIconClick - SPAWN cell not found for base ${baseID}`);
+            return;
+        }
+
+        console.log(`[HorseComponent] onHorseIconClick - Found SPAWN cell: ${spawnCell.cellID} for base ${baseID}`);
+
+        // Find the cell node in the scene
+        const targetPosition = this.findCellNodePosition(spawnCell.cellID);
+        if (!targetPosition) {
+            console.warn(`[HorseComponent] onHorseIconClick - Cell node not found in scene for ${spawnCell.cellID}`);
+            return;
+        }
+
+        // Move horse to SPAWN cell using tween
+        this.moveHorseToPosition(targetPosition);
+    }
+
+    /**
+     * Find SPAWN cell for a given base ID
+     */
+    private findSpawnCellForBase(baseID: string): Cell | null {
+        // Search through all positions for SPAWN cells
+        for (const position in gameBoardData.cells) {
+            const positionCells = gameBoardData.cells[position];
+            for (const cellID in positionCells) {
+                const cell = positionCells[cellID];
+                if (cell.cellType === GAME_CONSTANTS.CELL_TYPE_SPAWN && cell.baseID === baseID) {
+                    return cell;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Find cell node position in the scene by searching WalkwayComponents
+     */
+    private findCellNodePosition(cellID: string): Vec3 | null {
+        // Get the scene root
+        const scene = this.node.scene;
+        if (!scene) {
+            return null;
+        }
+
+        // Search for WalkwayComponent in the scene
+        const walkwayComponents: WalkwayComponent[] = [];
+        const findWalkways = (node: Node) => {
+            const walkway = node.getComponent(WalkwayComponent);
+            if (walkway) {
+                walkwayComponents.push(walkway);
+            }
+            for (let i = 0; i < node.children.length; i++) {
+                findWalkways(node.children[i]);
+            }
+        };
+        
+        findWalkways(scene);
+
+        if (walkwayComponents.length === 0) {
+            console.warn(`[HorseComponent] findCellNodePosition - No WalkwayComponents found in scene`);
+            return null;
+        }
+
+        // Search each walkway for the cell
+        for (const walkway of walkwayComponents) {
+            // Use the getCellNode method
+            const cellNode = walkway.getCellNode(cellID);
+            if (cellNode) {
+                // Convert to world position
+                const worldPos = new Vec3();
+                cellNode.getWorldPosition(worldPos);
+                console.log(`[HorseComponent] findCellNodePosition - Found cell node at world position:`, worldPos);
+                return worldPos;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Move horse icon to target position using tween animation
+     */
+    private moveHorseToPosition(targetPosition: Vec3) {
+        if (!this.nodeHorseIcon) {
+            console.warn(`[HorseComponent] moveHorseToPosition - HorseIcon node not found`);
+            return;
+        }
+
+        // Stop any existing animation
+        if (this.animationTween) {
+            this.animationTween.stop();
+            this.animationTween = null;
+        }
+
+        // Store original parent and sibling index for potential restoration
+        const originalParent = this.nodeHorseIcon.parent;
+        const originalSiblingIndex = originalParent ? originalParent.children.indexOf(this.nodeHorseIcon) : -1;
+
+        // Find Canvas or root node to reparent HorseIcon to (for rendering on top)
+        const scene = this.node.scene;
+        let topLayer: Node | null = null;
+        
+        if (scene) {
+            // Try to find Canvas node (usually the root UI container)
+            const canvas = scene.getChildByName("Canvas");
+            if (canvas) {
+                topLayer = canvas;
+            } else {
+                // Fallback to scene root
+                topLayer = scene;
+            }
+        }
+
+        // If we found a top layer, reparent the HorseIcon to it
+        if (topLayer && topLayer !== originalParent) {
+            const worldPos = new Vec3();
+            this.nodeHorseIcon.getWorldPosition(worldPos);
+            
+            // Reparent to top layer
+            topLayer.addChild(this.nodeHorseIcon);
+            
+            // Convert world position to local position relative to new parent
+            const localPos = new Vec3();
+            topLayer.inverseTransformPoint(localPos, worldPos);
+            this.nodeHorseIcon.setPosition(localPos);
+            
+            console.log(`[HorseComponent] moveHorseToPosition - Reparented HorseIcon to top layer for rendering on top`);
+        }
+
+        // Get current world position of HorseIcon
+        const currentPos = new Vec3();
+        this.nodeHorseIcon.getWorldPosition(currentPos);
+
+        console.log(`[HorseComponent] moveHorseToPosition - Moving HorseIcon from ${currentPos} to ${targetPosition}`);
+
+        // Convert target world position to local position relative to HorseIcon's current parent
+        const localTargetPos = new Vec3();
+        this.nodeHorseIcon.parent?.inverseTransformPoint(localTargetPos, targetPosition);
+
+        // Set a higher z-index to ensure it renders on top
+        // Negative z means closer to camera (renders on top in 2D)
+        localTargetPos.z = -100;
+
+        // Move to end of parent's children list (renders last = on top)
+        // This ensures the HorseIcon renders above other nodes
+        if (this.nodeHorseIcon.parent) {
+            const parent = this.nodeHorseIcon.parent;
+            const currentIndex = parent.children.indexOf(this.nodeHorseIcon);
+            if (currentIndex >= 0 && currentIndex < parent.children.length - 1) {
+                // Move to the end (highest render order)
+                parent.removeChild(this.nodeHorseIcon);
+                parent.addChild(this.nodeHorseIcon);
+            }
+        }
+
+        // Animate movement with tween - move only the HorseIcon node
+        this.animationTween = tween(this.nodeHorseIcon)
+            .to(0.5, { 
+                position: localTargetPos 
+            }, { 
+                easing: 'sineInOut' 
+            })
+            .call(() => {
+                console.log(`[HorseComponent] moveHorseToPosition - HorseIcon movement completed`);
+                this.animationTween = null;
+            })
+            .start();
+    }
+
     onDestroy() {
+        // Remove click event listener
+        if (this.nodeHorseIcon) {
+            const iconButton = this.nodeHorseIcon.getComponent(Button);
+            if (iconButton) {
+                iconButton.node.off(Button.EventType.CLICK, this.onHorseIconClick, this);
+            }
+        }
+
         // Stop any running animations
         if (this.animationTween) {
             this.animationTween.stop();
