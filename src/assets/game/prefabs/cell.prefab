@@ -71,14 +71,14 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "circle",
+    "_name": "normal",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
       "__id__": 1
     },
     "_children": [],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 3
@@ -207,7 +207,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "background",
+    "_name": "home-path",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -269,8 +269,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 2,
-      "height": 2
+      "width": 40,
+      "height": 40
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -281,7 +281,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "b5z3pUWkRCOqDwqKM7zX9P"
+    "fileId": "0cZy5R46FF4qcWa0tk00r8"
   },
   {
     "__type__": "cc.Sprite",
@@ -300,13 +300,13 @@
     "_dstBlendFactor": 4,
     "_color": {
       "__type__": "cc.Color",
-      "r": 199,
-      "g": 13,
-      "b": 13,
+      "r": 64,
+      "g": 240,
+      "b": 30,
       "a": 255
     },
     "_spriteFrame": {
-      "__uuid__": "7d8f9b89-4fd1-4c9f-a3ab-38ec7cded7ca@f9941",
+      "__uuid__": "20835ba4-6145-4fbc-a58a-051ce700aa3e@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_type": 0,
@@ -326,7 +326,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "79aL4C5UlPk5RjSmUO660/"
+    "fileId": "4bBRBDIJlC+K0tFezgEPuI"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -336,7 +336,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "0apQuxmdZCX6E2Zcmt2z2o",
+    "fileId": "a1KM0JvGFD75tTqL5hsBG0",
     "instance": null,
     "targetOverrides": null,
     "nestedPrefabInstanceRoots": null
@@ -546,9 +546,7 @@
     "showPopover": false,
     "popoverText": "",
     "bettingOdds": "",
-    "nodeBackground": {
-      "__id__": 8
-    },
+    "nodeBackground": null,
     "nodeCircleBorder": null,
     "nodeDebugInfo": null,
     "nodeHomepathIndex": null,
