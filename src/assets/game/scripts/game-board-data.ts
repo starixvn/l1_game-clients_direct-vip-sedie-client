@@ -8,6 +8,27 @@ export type Position = "NORTH" | "EAST" | "SOUTH" | "WEST" | "HOME";
 export type CellType = "NORMAL" | "HOMEPATH" | "SPAWN";
 export type RelationshipType = "BASE" | "WALKWAY" | "HOME";
 
+// Game constants grouped together
+export const GAME_CONSTANTS = {
+    // Walkway and cell constants
+    HOME_WALKWAY_ID: "HOME",                        // Special walkway ID for home cells
+    HOME_EMPTY_CELL_ID: "HOME_EMPTY",               // Empty placeholder cell ID for HOME walkway
+    HOME_WALKWAY_WIDTH: 1,                          // HOME walkway width in cells
+    HOME_WALKWAY_HEIGHT: 3,                         // HOME walkway height in cells
+
+    // Position constants
+    POSITION_NORTH: "NORTH",
+    POSITION_SOUTH: "SOUTH",
+    POSITION_EAST: "EAST",
+    POSITION_WEST: "WEST",
+    POSITION_HOME: "HOME",
+
+    // Cell type constants (matching CellType from game-board-data.ts)
+    CELL_TYPE_NORMAL: "NORMAL",
+    CELL_TYPE_HOMEPATH: "HOMEPATH",
+    CELL_TYPE_SPAWN: "SPAWN",
+} as const;
+
 export interface Base {
   ID: string;
   horseIDs: string[];

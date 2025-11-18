@@ -9,17 +9,64 @@
  */
 
 import { _decorator, Component, Node, Sprite, Color, Label, UITransform, instantiate, Prefab, Vec3, Vec2, Layout, Size, resources } from "cc";
-import { gameBoardData, Walkway, Cell, Position, CellType, BaseColor } from "../game-board-data";
+import { 
+    gameBoardData, 
+    Walkway, 
+    Cell, 
+    Position, 
+    CellType, 
+    BaseColor,
+    GAME_CONSTANTS
+} from "../game-board-data";
 import { 
     WALKWAY_LENGTH, 
     WALKWAY_WIDTH, 
     WALKWAY_VERTICAL_HEIGHT, 
     CELL_DIMENSION,
-    BASE_COLORS 
+    BASE_COLORS
 } from "../global-constants";
 import { CellComponent } from "./cell-component";
 
 const { ccclass, property } = _decorator;
+
+// Prefab node name constants
+const NODE_NAME_BACKGROUND = "background";
+const NODE_NAME_NORMAL = "normal";
+const NODE_NAME_HOME_PATH = "home-path";
+const NODE_NAME_RELEASE = "release";
+const NODE_NAME_CIRCLE = "circle";
+const NODE_NAME_LABEL = "Label";
+
+// Prefab resource paths
+const CELL_PREFAB_PATH = "game/prefabs/cell";          // Path to cell prefab resource
+
+// UI constants
+const ANCHOR_POINT_CENTER = 0.5;                       // Center anchor point (0.5, 0.5)
+const LAYOUT_PADDING_ZERO = 0;                         // Zero padding/spacing for layouts
+const CELL_LABEL_FONT_SIZE = 10;                       // Font size for cell labels
+const CELL_LABEL_LINE_HEIGHT = 12;                     // Line height for cell labels
+const CELL_LABEL_OUTLINE_WIDTH = 2;                    // Outline width for cell labels
+
+// Color constants
+const COLOR_WHITE_R = 255;                              // White color RGB values
+const COLOR_WHITE_G = 255;
+const COLOR_WHITE_B = 255;
+const COLOR_WHITE_A = 255;
+const COLOR_BLACK_R = 0;                               // Black color RGB values
+const COLOR_BLACK_G = 0;
+const COLOR_BLACK_B = 0;
+const COLOR_BLACK_A = 255;
+const COLOR_GRAY_R = 128;                              // Gray color RGB values (default cell color)
+const COLOR_GRAY_G = 128;
+const COLOR_GRAY_B = 128;
+const COLOR_GRAY_A = 255;
+const COLOR_MAX_VALUE = 255;                           // Maximum color value
+const HIGHLIGHT_BRIGHTNESS_INCREMENT = 50;             // Brightness increment for cell highlighting
+
+// Empty cell constants
+const EMPTY_CELL_COLUMN = 0;                           // Empty cell column value
+const EMPTY_CELL_ROW = 0;                              // Empty cell row value
+const EMPTY_CELL_INDEX = -1;                           // Empty cell index value
 
 /**
  * Walkway position type
@@ -89,10 +136,9 @@ export class WalkwayComponent extends Component {
      * Load cell prefab from resources if not assigned
      */
     private loadCellPrefab(callback?: () => void) {
-        const prefabPath = "game/prefabs/cell";
-        resources.load(prefabPath, Prefab, (err, prefab) => {
+        resources.load(CELL_PREFAB_PATH, Prefab, (err, prefab) => {
             if (err) {
-                console.warn(`[WalkwayComponent] loadCellPrefab - Failed to load cell prefab from ${prefabPath}: ${err.message}`);
+                console.warn(`[WalkwayComponent] loadCellPrefab - Failed to load cell prefab from ${CELL_PREFAB_PATH}: ${err.message}`);
                 console.log(`[WalkwayComponent] loadCellPrefab - Will create cells programmatically instead`);
                 if (callback) callback();
                 return;
@@ -100,7 +146,7 @@ export class WalkwayComponent extends Component {
             
             if (prefab) {
                 this.cellPrefab = prefab;
-                console.log(`[WalkwayComponent] loadCellPrefab - Successfully loaded cell prefab from ${prefabPath}`);
+                console.log(`[WalkwayComponent] loadCellPrefab - Successfully loaded cell prefab from ${CELL_PREFAB_PATH}`);
             }
             
             if (callback) callback();
@@ -119,14 +165,14 @@ export class WalkwayComponent extends Component {
         }
 
         // Special handling for HOME walkway
-        if (this.walkwayID === "HOME") {
+        if (this.walkwayID === GAME_CONSTANTS.HOME_WALKWAY_ID) {
             console.log(`[WalkwayComponent] initializeWalkway - Processing HOME walkway, collecting cells with notRenderInWalkway: true`);
             
             // Collect cells in specific order: NORTH first, then empty cell, then SOUTH
             this.walkwayCells = [];
             
             // Collect NORTH cells first and sort them by row (descending - highest row first)
-            const northCells = gameBoardData.cells["NORTH"];
+            const northCells = gameBoardData.cells[GAME_CONSTANTS.POSITION_NORTH];
             if (northCells) {
                 const cells = Object.values(northCells);
                 const homeCells = cells.filter(cell => cell.notRenderInWalkway === true);
@@ -139,20 +185,20 @@ export class WalkwayComponent extends Component {
             // Create empty placeholder cell between NORTH and SOUTH
             const emptyCell: Cell = {
                 baseID: "",
-                cellID: "HOME_EMPTY",
-                column: 0,
-                position: "HOME",
-                row: 0,
-                cellType: "NORMAL",
+                cellID: GAME_CONSTANTS.HOME_EMPTY_CELL_ID,
+                column: EMPTY_CELL_COLUMN,
+                position: GAME_CONSTANTS.POSITION_HOME,
+                row: EMPTY_CELL_ROW,
+                cellType: GAME_CONSTANTS.CELL_TYPE_NORMAL,
                 horseIDs: [],
-                index: -1,
+                index: EMPTY_CELL_INDEX,
                 notRenderInWalkway: false
             };
             this.walkwayCells.push(emptyCell);
             console.log(`[WalkwayComponent] initializeWalkway - Added empty placeholder cell between NORTH and SOUTH`);
             
             // Collect SOUTH cells and sort them by row (ascending - lowest row first)
-            const southCells = gameBoardData.cells["SOUTH"];
+            const southCells = gameBoardData.cells[GAME_CONSTANTS.POSITION_SOUTH];
             if (southCells) {
                 const cells = Object.values(southCells);
                 const homeCells = cells.filter(cell => cell.notRenderInWalkway === true);
@@ -168,10 +214,10 @@ export class WalkwayComponent extends Component {
             if (this.walkwayCells.length > 0) {
                 const firstCell = this.walkwayCells[0];
                 // Skip empty cell for orientation check
-                const realCell = firstCell.cellID === "HOME_EMPTY" && this.walkwayCells.length > 1 
+                const realCell = firstCell.cellID === GAME_CONSTANTS.HOME_EMPTY_CELL_ID && this.walkwayCells.length > 1 
                     ? this.walkwayCells[1] 
                     : firstCell;
-                this.isHorizontal = realCell.position === "EAST" || realCell.position === "WEST";
+                this.isHorizontal = realCell.position === GAME_CONSTANTS.POSITION_EAST || realCell.position === GAME_CONSTANTS.POSITION_WEST;
             } else {
                 this.isHorizontal = false; // Default to vertical
             }
@@ -193,7 +239,7 @@ export class WalkwayComponent extends Component {
             });
 
             // Determine if walkway is horizontal (East/West) or vertical (North/South)
-            this.isHorizontal = this.walkwayData.position === "EAST" || this.walkwayData.position === "WEST";
+            this.isHorizontal = this.walkwayData.position === GAME_CONSTANTS.POSITION_EAST || this.walkwayData.position === GAME_CONSTANTS.POSITION_WEST;
             console.log(`[WalkwayComponent] initializeWalkway - Walkway orientation: ${this.isHorizontal ? "Horizontal" : "Vertical"}`);
 
             // Get all cells for this walkway position
@@ -221,7 +267,7 @@ export class WalkwayComponent extends Component {
 
         // Sort cells for proper grid layout ordering
         // Skip sorting for HOME walkway - preserve the order: NORTH cells -> empty cell -> SOUTH cells
-        if (this.walkwayID !== "HOME" && this.walkwayCells.length > 0) {
+        if (this.walkwayID !== GAME_CONSTANTS.HOME_WALKWAY_ID && this.walkwayCells.length > 0) {
             // For horizontal walkways (East/West): sort by row first, then column (row-major order)
             // For vertical walkways (North/South): sort by column first, then row (column-major order)
             this.walkwayCells.sort((a, b) => {
@@ -241,7 +287,7 @@ export class WalkwayComponent extends Component {
             });
 
             console.log(`[WalkwayComponent] initializeWalkway - Sorted cells (${this.isHorizontal ? "row-major" : "column-major"} order). First cell: ${this.walkwayCells[0]?.cellID}, Last cell: ${this.walkwayCells[this.walkwayCells.length - 1]?.cellID}`);
-        } else if (this.walkwayID === "HOME") {
+        } else if (this.walkwayID === GAME_CONSTANTS.HOME_WALKWAY_ID) {
             console.log(`[WalkwayComponent] initializeWalkway - HOME walkway: preserving order (NORTH -> empty -> SOUTH)`);
         }
 
@@ -254,10 +300,10 @@ export class WalkwayComponent extends Component {
         if (transform) {
             let width: number, height: number;
             
-            if (this.walkwayID === "HOME") {
+            if (this.walkwayID === GAME_CONSTANTS.HOME_WALKWAY_ID) {
                 // Fixed dimensions for HOME walkway
-                width = 1 * CELL_DIMENSION;
-                height = 3 * CELL_DIMENSION;
+                width = GAME_CONSTANTS.HOME_WALKWAY_WIDTH * CELL_DIMENSION;
+                height = GAME_CONSTANTS.HOME_WALKWAY_HEIGHT * CELL_DIMENSION;
                 console.log(`[WalkwayComponent] initializeWalkway - HOME walkway container size: ${width}x${height}`);
             } else {
                 // Normal walkway: use fixed dimensions
@@ -294,24 +340,24 @@ export class WalkwayComponent extends Component {
             if (this.isHorizontal) {
                 // Horizontal walkways: cells flow horizontally (columns), then wrap to next row
                 layout.startAxis = Layout.AxisDirection.HORIZONTAL;
-                layout.paddingLeft = 0;
-                layout.paddingRight = 0;
-                layout.paddingTop = 0;
-                layout.paddingBottom = 0;
-                layout.spacingX = 0;
-                layout.spacingY = 0;
+                layout.paddingLeft = LAYOUT_PADDING_ZERO;
+                layout.paddingRight = LAYOUT_PADDING_ZERO;
+                layout.paddingTop = LAYOUT_PADDING_ZERO;
+                layout.paddingBottom = LAYOUT_PADDING_ZERO;
+                layout.spacingX = LAYOUT_PADDING_ZERO;
+                layout.spacingY = LAYOUT_PADDING_ZERO;
                 // Calculate grid columns based on walkway length
                 layout.cellSize = new Size(CELL_DIMENSION, CELL_DIMENSION);
                 console.log(`[WalkwayComponent] initializeWalkway - Grid layout configured for horizontal walkway`);
             } else {
                 // Vertical walkways: cells flow vertically (rows), then wrap to next column
                 layout.startAxis = Layout.AxisDirection.VERTICAL;
-                layout.paddingLeft = 0;
-                layout.paddingRight = 0;
-                layout.paddingTop = 0;
-                layout.paddingBottom = 0;
-                layout.spacingX = 0;
-                layout.spacingY = 0;
+                layout.paddingLeft = LAYOUT_PADDING_ZERO;
+                layout.paddingRight = LAYOUT_PADDING_ZERO;
+                layout.paddingTop = LAYOUT_PADDING_ZERO;
+                layout.paddingBottom = LAYOUT_PADDING_ZERO;
+                layout.spacingX = LAYOUT_PADDING_ZERO;
+                layout.spacingY = LAYOUT_PADDING_ZERO;
                 layout.cellSize = new Size(CELL_DIMENSION, CELL_DIMENSION);
                 console.log(`[WalkwayComponent] initializeWalkway - Grid layout configured for vertical walkway`);
             }
@@ -399,7 +445,7 @@ export class WalkwayComponent extends Component {
         console.log(`[WalkwayComponent] createCellNode - Creating cell node for ${cell.cellID}`);
         
         // Handle empty placeholder cell (for HOME walkway)
-        if (cell.cellID === "HOME_EMPTY") {
+        if (cell.cellID === GAME_CONSTANTS.HOME_EMPTY_CELL_ID) {
             return this.createEmptyCellNode();
         }
         
@@ -419,18 +465,18 @@ export class WalkwayComponent extends Component {
             if (cellTransform) {
                 // Update size to match CELL_DIMENSION
                 cellTransform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
-                cellTransform.setAnchorPoint(0.5, 0.5);
+                cellTransform.setAnchorPoint(ANCHOR_POINT_CENTER, ANCHOR_POINT_CENTER);
                 console.log(`[WalkwayComponent] createCellNode - Updated prefab UITransform: ${CELL_DIMENSION}x${CELL_DIMENSION}`);
             } else {
                 console.warn(`[WalkwayComponent] createCellNode - Prefab missing UITransform, adding one`);
                 cellTransform = cellNode.addComponent(UITransform);
                 cellTransform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
-                cellTransform.setAnchorPoint(0.5, 0.5);
+                cellTransform.setAnchorPoint(ANCHOR_POINT_CENTER, ANCHOR_POINT_CENTER);
             }
 
             // Apply cell color to prefab's sprite (if it has one)
             // First try to find a background node, otherwise use the root node's sprite
-            const backgroundNode = cellNode.getChildByName("background");
+            const backgroundNode = cellNode.getChildByName(NODE_NAME_BACKGROUND);
             let spriteToColor: Sprite = null;
             
             if (backgroundNode) {
@@ -452,8 +498,8 @@ export class WalkwayComponent extends Component {
             }
 
             // Handle normal node for NORMAL cell type
-            if (cell.cellType === "NORMAL") {
-                const normalNode = cellNode.getChildByName("normal");
+            if (cell.cellType === GAME_CONSTANTS.CELL_TYPE_NORMAL) {
+                const normalNode = cellNode.getChildByName(NODE_NAME_NORMAL);
                 if (normalNode) {
                     const normalSprite = normalNode.getComponent(Sprite);
                     if (normalSprite) {
@@ -469,8 +515,8 @@ export class WalkwayComponent extends Component {
             }
 
             // Handle home-path node for HOMEPATH cell type
-            if (cell.cellType === "HOMEPATH") {
-                const homePathNode = cellNode.getChildByName("home-path");
+            if (cell.cellType === GAME_CONSTANTS.CELL_TYPE_HOMEPATH) {
+                const homePathNode = cellNode.getChildByName(NODE_NAME_HOME_PATH);
                 if (homePathNode) {
                     const homePathSprite = homePathNode.getComponent(Sprite);
                     if (homePathSprite) {
@@ -486,8 +532,8 @@ export class WalkwayComponent extends Component {
             }
 
             // Handle release node for SPAWN cell type
-            if (cell.cellType === "SPAWN") {
-                const releaseNode = cellNode.getChildByName("release");
+            if (cell.cellType === GAME_CONSTANTS.CELL_TYPE_SPAWN) {
+                const releaseNode = cellNode.getChildByName(NODE_NAME_RELEASE);
                 if (releaseNode) {
                     const releaseSprite = releaseNode.getComponent(Sprite);
                     if (releaseSprite) {
@@ -508,7 +554,7 @@ export class WalkwayComponent extends Component {
             // Add UITransform
             const transform = cellNode.addComponent(UITransform);
             transform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
-            transform.setAnchorPoint(0.5, 0.5);
+            transform.setAnchorPoint(ANCHOR_POINT_CENTER, ANCHOR_POINT_CENTER);
             console.log(`[WalkwayComponent] createCellNode - Added UITransform: ${CELL_DIMENSION}x${CELL_DIMENSION}`);
 
             // Add Sprite for visual representation
@@ -517,8 +563,8 @@ export class WalkwayComponent extends Component {
             console.log(`[WalkwayComponent] createCellNode - Added Sprite with color: (${cellColor.r}, ${cellColor.g}, ${cellColor.b}, ${cellColor.a})`);
 
             // Handle home-path node for HOMEPATH cell type (programmatic creation)
-            if (cell.cellType === "HOMEPATH") {
-                const homePathNode = cellNode.getChildByName("home-path");
+            if (cell.cellType === GAME_CONSTANTS.CELL_TYPE_HOMEPATH) {
+                const homePathNode = cellNode.getChildByName(NODE_NAME_HOME_PATH);
                 if (homePathNode) {
                     const homePathSprite = homePathNode.getComponent(Sprite);
                     if (homePathSprite) {
@@ -530,8 +576,8 @@ export class WalkwayComponent extends Component {
             }
 
             // Handle release node for SPAWN cell type (programmatic creation)
-            if (cell.cellType === "SPAWN") {
-                const releaseNode = cellNode.getChildByName("release");
+            if (cell.cellType === GAME_CONSTANTS.CELL_TYPE_SPAWN) {
+                const releaseNode = cellNode.getChildByName(NODE_NAME_RELEASE);
                 if (releaseNode) {
                     const releaseSprite = releaseNode.getComponent(Sprite);
                     if (releaseSprite) {
@@ -570,14 +616,14 @@ export class WalkwayComponent extends Component {
             
             // If prefab has nodeBackground, make sure it's set
             if (this.cellPrefab) {
-                const backgroundNode = cellNode.getChildByName("background");
+                const backgroundNode = cellNode.getChildByName(NODE_NAME_BACKGROUND);
                 if (backgroundNode && !cellComponent.nodeBackground) {
                     cellComponent.nodeBackground = backgroundNode;
                     console.log(`[WalkwayComponent] createCellNode - Set nodeBackground from prefab`);
                 }
                 
                 // If prefab has circle node, set it as nodeCircleBorder (for backward compatibility)
-                const circleNode = cellNode.getChildByName("circle");
+                const circleNode = cellNode.getChildByName(NODE_NAME_CIRCLE);
                 if (circleNode && !cellComponent.nodeCircleBorder) {
                     cellComponent.nodeCircleBorder = circleNode;
                     console.log(`[WalkwayComponent] createCellNode - Set nodeCircleBorder from prefab`);
@@ -591,7 +637,7 @@ export class WalkwayComponent extends Component {
         }
 
         // Handle Label - check if prefab already has one, otherwise create new
-        let labelNode = cellNode.getChildByName("Label");
+        let labelNode = cellNode.getChildByName(NODE_NAME_LABEL);
         let cellLabel: Label = null;
         
         if (labelNode) {
@@ -603,19 +649,19 @@ export class WalkwayComponent extends Component {
             const labelTransform = labelNode.getComponent(UITransform);
             if (labelTransform) {
                 labelTransform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
-                labelTransform.setAnchorPoint(0.5, 0.5);
+                labelTransform.setAnchorPoint(ANCHOR_POINT_CENTER, ANCHOR_POINT_CENTER);
             }
         } else {
             // Create new Label node if prefab doesn't have one
             console.log(`[WalkwayComponent] createCellNode - Creating new Label node for cell ID`);
-            labelNode = new Node(`Label_${cell.cellID}`);
+            labelNode = new Node(`${NODE_NAME_LABEL}_${cell.cellID}`);
             cellNode.addChild(labelNode);
             
             // Add UITransform to label node
             const labelTransform = labelNode.addComponent(UITransform);
             labelTransform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
-            labelTransform.setAnchorPoint(0.5, 0.5);
-            labelNode.setPosition(0, 0, 0); // Center in parent
+            labelTransform.setAnchorPoint(ANCHOR_POINT_CENTER, ANCHOR_POINT_CENTER);
+            labelNode.setPosition(LAYOUT_PADDING_ZERO, LAYOUT_PADDING_ZERO, LAYOUT_PADDING_ZERO); // Center in parent
             
             // Add Label component
             cellLabel = labelNode.addComponent(Label);
@@ -627,17 +673,17 @@ export class WalkwayComponent extends Component {
             cellLabel.string = cell.cellID;
             
             // Font settings - use system font
-            cellLabel.fontSize = 10; // Small font size to fit in cell
+            cellLabel.fontSize = CELL_LABEL_FONT_SIZE; // Small font size to fit in cell
             cellLabel.fontFamily = "Arial"; // Use system font
-            cellLabel.lineHeight = 12; // Line height
+            cellLabel.lineHeight = CELL_LABEL_LINE_HEIGHT; // Line height
             
             // Color settings
-            cellLabel.color = new Color(255, 255, 255, 255); // White color
+            cellLabel.color = new Color(COLOR_WHITE_R, COLOR_WHITE_G, COLOR_WHITE_B, COLOR_WHITE_A); // White color
             
             // Outline for visibility
             cellLabel.enableOutline = true;
-            cellLabel.outlineColor = new Color(0, 0, 0, 255); // Black outline for visibility
-            cellLabel.outlineWidth = 2;
+            cellLabel.outlineColor = new Color(COLOR_BLACK_R, COLOR_BLACK_G, COLOR_BLACK_B, COLOR_BLACK_A); // Black outline for visibility
+            cellLabel.outlineWidth = CELL_LABEL_OUTLINE_WIDTH;
             
             // Alignment
             cellLabel.horizontalAlign = Label.HorizontalAlign.CENTER;
@@ -681,36 +727,36 @@ export class WalkwayComponent extends Component {
             let transform = emptyNode.getComponent(UITransform);
             if (transform) {
                 transform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
-                transform.setAnchorPoint(0.5, 0.5);
+                transform.setAnchorPoint(ANCHOR_POINT_CENTER, ANCHOR_POINT_CENTER);
             } else {
                 transform = emptyNode.addComponent(UITransform);
                 transform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
-                transform.setAnchorPoint(0.5, 0.5);
+                transform.setAnchorPoint(ANCHOR_POINT_CENTER, ANCHOR_POINT_CENTER);
             }
             
             // Don't set color - leave it as default/transparent
             // Disable all child nodes that might have colors
-            const backgroundNode = emptyNode.getChildByName("background");
+            const backgroundNode = emptyNode.getChildByName(NODE_NAME_BACKGROUND);
             if (backgroundNode) {
                 backgroundNode.active = false;
             }
-            const normalNode = emptyNode.getChildByName("normal");
+            const normalNode = emptyNode.getChildByName(NODE_NAME_NORMAL);
             if (normalNode) {
                 normalNode.active = false;
             }
-            const homePathNode = emptyNode.getChildByName("home-path");
+            const homePathNode = emptyNode.getChildByName(NODE_NAME_HOME_PATH);
             if (homePathNode) {
                 homePathNode.active = false;
             }
-            const releaseNode = emptyNode.getChildByName("release");
+            const releaseNode = emptyNode.getChildByName(NODE_NAME_RELEASE);
             if (releaseNode) {
                 releaseNode.active = false;
             }
-            const circleNode = emptyNode.getChildByName("circle");
+            const circleNode = emptyNode.getChildByName(NODE_NAME_CIRCLE);
             if (circleNode) {
                 circleNode.active = false;
             }
-            const labelNode = emptyNode.getChildByName("Label");
+            const labelNode = emptyNode.getChildByName(NODE_NAME_LABEL);
             if (labelNode) {
                 labelNode.active = false;
             }
@@ -719,10 +765,10 @@ export class WalkwayComponent extends Component {
             emptyNode = new Node("EmptyCell");
             const transform = emptyNode.addComponent(UITransform);
             transform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
-            transform.setAnchorPoint(0.5, 0.5);
+            transform.setAnchorPoint(ANCHOR_POINT_CENTER, ANCHOR_POINT_CENTER);
         }
         
-        emptyNode.name = "EmptyCell_HOME_EMPTY";
+        emptyNode.name = `EmptyCell_${GAME_CONSTANTS.HOME_EMPTY_CELL_ID}`;
         console.log(`[WalkwayComponent] createEmptyCellNode - Empty cell node created: ${CELL_DIMENSION}x${CELL_DIMENSION}`);
         
         return emptyNode;
@@ -742,9 +788,9 @@ export class WalkwayComponent extends Component {
 
         // Determine cell color based on type
         switch (cell.cellType) {
-            case "SPAWN":
-            case "HOMEPATH":
-            case "NORMAL":
+            case GAME_CONSTANTS.CELL_TYPE_SPAWN:
+            case GAME_CONSTANTS.CELL_TYPE_HOMEPATH:
+            case GAME_CONSTANTS.CELL_TYPE_NORMAL:
                 if (baseColor && BASE_COLORS[baseColor]) {
                     const hexColor = BASE_COLORS[baseColor];
                     const color = this.hexToColor(hexColor);
@@ -758,7 +804,7 @@ export class WalkwayComponent extends Component {
 
         // Default color (gray)
         console.log(`[WalkwayComponent] getCellColor - Returning default gray color`);
-        return new Color(128, 128, 128, 255);
+        return new Color(COLOR_GRAY_R, COLOR_GRAY_G, COLOR_GRAY_B, COLOR_GRAY_A);
     }
 
     /**
@@ -773,7 +819,7 @@ export class WalkwayComponent extends Component {
         const g = parseInt(hex.substring(2, 4), 16);
         const b = parseInt(hex.substring(4, 6), 16);
         
-        return new Color(r, g, b, 255);
+        return new Color(r, g, b, COLOR_MAX_VALUE);
     }
 
     /**
@@ -844,7 +890,7 @@ export class WalkwayComponent extends Component {
         }
 
         // Find the sprite to highlight (same logic as createCellNode)
-        const backgroundNode = cellData.node.getChildByName("background");
+        const backgroundNode = cellData.node.getChildByName(NODE_NAME_BACKGROUND);
         let spriteToHighlight: Sprite = null;
         
         if (backgroundNode) {
@@ -861,16 +907,16 @@ export class WalkwayComponent extends Component {
                 // Default highlight (brighter)
                 const originalColor = spriteToHighlight.color;
                 spriteToHighlight.color = new Color(
-                    Math.min(255, originalColor.r + 50),
-                    Math.min(255, originalColor.g + 50),
-                    Math.min(255, originalColor.b + 50),
-                    255
+                    Math.min(COLOR_MAX_VALUE, originalColor.r + HIGHLIGHT_BRIGHTNESS_INCREMENT),
+                    Math.min(COLOR_MAX_VALUE, originalColor.g + HIGHLIGHT_BRIGHTNESS_INCREMENT),
+                    Math.min(COLOR_MAX_VALUE, originalColor.b + HIGHLIGHT_BRIGHTNESS_INCREMENT),
+                    COLOR_MAX_VALUE
                 );
             }
         }
 
         // Also highlight normal node if it exists
-        const normalNode = cellData.node.getChildByName("normal");
+        const normalNode = cellData.node.getChildByName(NODE_NAME_NORMAL);
         if (normalNode) {
             const normalSprite = normalNode.getComponent(Sprite);
             if (normalSprite) {
@@ -880,10 +926,10 @@ export class WalkwayComponent extends Component {
                     // Default highlight (brighter)
                     const originalColor = normalSprite.color;
                     normalSprite.color = new Color(
-                        Math.min(255, originalColor.r + 50),
-                        Math.min(255, originalColor.g + 50),
-                        Math.min(255, originalColor.b + 50),
-                        255
+                        Math.min(COLOR_MAX_VALUE, originalColor.r + HIGHLIGHT_BRIGHTNESS_INCREMENT),
+                        Math.min(COLOR_MAX_VALUE, originalColor.g + HIGHLIGHT_BRIGHTNESS_INCREMENT),
+                        Math.min(COLOR_MAX_VALUE, originalColor.b + HIGHLIGHT_BRIGHTNESS_INCREMENT),
+                        COLOR_MAX_VALUE
                     );
                 }
             }
@@ -903,7 +949,7 @@ export class WalkwayComponent extends Component {
         const originalColor = this.getCellColor(cellData.cell);
         
         // Find the sprite to restore color (same logic as createCellNode)
-        const backgroundNode = cellData.node.getChildByName("background");
+        const backgroundNode = cellData.node.getChildByName(NODE_NAME_BACKGROUND);
         let spriteToRestore: Sprite = null;
         
         if (backgroundNode) {
@@ -919,7 +965,7 @@ export class WalkwayComponent extends Component {
         }
 
         // Also restore normal node color if it exists
-        const normalNode = cellData.node.getChildByName("normal");
+        const normalNode = cellData.node.getChildByName(NODE_NAME_NORMAL);
         if (normalNode) {
             const normalSprite = normalNode.getComponent(Sprite);
             if (normalSprite) {
@@ -993,21 +1039,21 @@ export class WalkwayComponent extends Component {
      * Get spawn cells
      */
     public getSpawnCells(): Cell[] {
-        return this.getCellsByType("SPAWN");
+        return this.getCellsByType(GAME_CONSTANTS.CELL_TYPE_SPAWN);
     }
 
     /**
      * Get homepath cells
      */
     public getHomepathCells(): Cell[] {
-        return this.getCellsByType("HOMEPATH");
+        return this.getCellsByType(GAME_CONSTANTS.CELL_TYPE_HOMEPATH);
     }
 
     /**
      * Get normal cells
      */
     public getNormalCells(): Cell[] {
-        return this.getCellsByType("NORMAL");
+        return this.getCellsByType(GAME_CONSTANTS.CELL_TYPE_NORMAL);
     }
 }
 
