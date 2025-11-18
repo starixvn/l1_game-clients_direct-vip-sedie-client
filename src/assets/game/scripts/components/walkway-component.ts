@@ -451,10 +451,6 @@ export class WalkwayComponent extends Component {
         
         let cellNode: Node;
 
-        // Get cell color based on the base it belongs to
-        const cellColor = this.getCellColor(cell);
-        console.log(`[WalkwayComponent] createCellNode - Cell color for ${cell.cellID}: (${cellColor.r}, ${cellColor.g}, ${cellColor.b}, ${cellColor.a})`);
-
         // Use prefab if available, otherwise create node programmatically
         if (this.cellPrefab) {
             console.log(`[WalkwayComponent] createCellNode - Using prefab for ${cell.cellID}`);
@@ -473,80 +469,6 @@ export class WalkwayComponent extends Component {
                 cellTransform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
                 cellTransform.setAnchorPoint(ANCHOR_POINT_CENTER, ANCHOR_POINT_CENTER);
             }
-
-            // Apply cell color to prefab's sprite (if it has one)
-            // First try to find a background node, otherwise use the root node's sprite
-            const backgroundNode = cellNode.getChildByName(NODE_NAME_BACKGROUND);
-            let spriteToColor: Sprite = null;
-            
-            if (backgroundNode) {
-                spriteToColor = backgroundNode.getComponent(Sprite);
-                console.log(`[WalkwayComponent] createCellNode - Found background node, applying color to its sprite`);
-            } else {
-                // Try root node's sprite
-                spriteToColor = cellNode.getComponent(Sprite);
-                if (spriteToColor) {
-                    console.log(`[WalkwayComponent] createCellNode - Found sprite on root node, applying color`);
-                }
-            }
-
-            if (spriteToColor) {
-                spriteToColor.color = cellColor;
-                console.log(`[WalkwayComponent] createCellNode - Applied cell color to sprite: (${cellColor.r}, ${cellColor.g}, ${cellColor.b}, ${cellColor.a})`);
-            } else {
-                console.warn(`[WalkwayComponent] createCellNode - No sprite found on prefab to apply color. Cell color is based on base: ${cell.baseID}`);
-            }
-
-            // Handle normal node for NORMAL cell type
-            if (cell.cellType === GAME_CONSTANTS.CELL_TYPE_NORMAL) {
-                const normalNode = cellNode.getChildByName(NODE_NAME_NORMAL);
-                if (normalNode) {
-                    const normalSprite = normalNode.getComponent(Sprite);
-                    if (normalSprite) {
-                        normalSprite.color = cellColor;
-                        normalNode.active = true; // Enable the node (it's disabled by default)
-                        console.log(`[WalkwayComponent] createCellNode - Applied cell color to normal node and enabled it: (${cellColor.r}, ${cellColor.g}, ${cellColor.b}, ${cellColor.a})`);
-                    } else {
-                        console.log(`[WalkwayComponent] createCellNode - Normal node found but no Sprite component`);
-                    }
-                } else {
-                    console.log(`[WalkwayComponent] createCellNode - No normal node found for NORMAL cell`);
-                }
-            }
-
-            // Handle home-path node for HOMEPATH cell type
-            if (cell.cellType === GAME_CONSTANTS.CELL_TYPE_HOMEPATH) {
-                const homePathNode = cellNode.getChildByName(NODE_NAME_HOME_PATH);
-                if (homePathNode) {
-                    const homePathSprite = homePathNode.getComponent(Sprite);
-                    if (homePathSprite) {
-                        homePathSprite.color = cellColor;
-                        homePathNode.active = true; // Enable the node (it's disabled by default)
-                        console.log(`[WalkwayComponent] createCellNode - Applied cell color to home-path node and enabled it: (${cellColor.r}, ${cellColor.g}, ${cellColor.b}, ${cellColor.a})`);
-                    } else {
-                        console.log(`[WalkwayComponent] createCellNode - Home-path node found but no Sprite component`);
-                    }
-                } else {
-                    console.log(`[WalkwayComponent] createCellNode - No home-path node found for HOMEPATH cell`);
-                }
-            }
-
-            // Handle release node for SPAWN cell type
-            if (cell.cellType === GAME_CONSTANTS.CELL_TYPE_SPAWN) {
-                const releaseNode = cellNode.getChildByName(NODE_NAME_RELEASE);
-                if (releaseNode) {
-                    const releaseSprite = releaseNode.getComponent(Sprite);
-                    if (releaseSprite) {
-                        releaseSprite.color = cellColor;
-                        releaseNode.active = true; // Enable the node (it's disabled by default)
-                        console.log(`[WalkwayComponent] createCellNode - Applied cell color to release node and enabled it: (${cellColor.r}, ${cellColor.g}, ${cellColor.b}, ${cellColor.a})`);
-                    } else {
-                        console.log(`[WalkwayComponent] createCellNode - Release node found but no Sprite component`);
-                    }
-                } else {
-                    console.log(`[WalkwayComponent] createCellNode - No release node found for SPAWN cell`);
-                }
-            }
         } else {
             console.log(`[WalkwayComponent] createCellNode - Creating node programmatically for ${cell.cellID}`);
             cellNode = new Node(`Cell_${cell.cellID}`);
@@ -557,36 +479,9 @@ export class WalkwayComponent extends Component {
             transform.setAnchorPoint(ANCHOR_POINT_CENTER, ANCHOR_POINT_CENTER);
             console.log(`[WalkwayComponent] createCellNode - Added UITransform: ${CELL_DIMENSION}x${CELL_DIMENSION}`);
 
-            // Add Sprite for visual representation
+            // Add Sprite for visual representation (basic fallback)
             const sprite = cellNode.addComponent(Sprite);
-            sprite.color = cellColor;
-            console.log(`[WalkwayComponent] createCellNode - Added Sprite with color: (${cellColor.r}, ${cellColor.g}, ${cellColor.b}, ${cellColor.a})`);
-
-            // Handle home-path node for HOMEPATH cell type (programmatic creation)
-            if (cell.cellType === GAME_CONSTANTS.CELL_TYPE_HOMEPATH) {
-                const homePathNode = cellNode.getChildByName(NODE_NAME_HOME_PATH);
-                if (homePathNode) {
-                    const homePathSprite = homePathNode.getComponent(Sprite);
-                    if (homePathSprite) {
-                        homePathSprite.color = cellColor;
-                        homePathNode.active = true; // Enable the node (it's disabled by default)
-                        console.log(`[WalkwayComponent] createCellNode - Applied cell color to home-path node and enabled it: (${cellColor.r}, ${cellColor.g}, ${cellColor.b}, ${cellColor.a})`);
-                    }
-                }
-            }
-
-            // Handle release node for SPAWN cell type (programmatic creation)
-            if (cell.cellType === GAME_CONSTANTS.CELL_TYPE_SPAWN) {
-                const releaseNode = cellNode.getChildByName(NODE_NAME_RELEASE);
-                if (releaseNode) {
-                    const releaseSprite = releaseNode.getComponent(Sprite);
-                    if (releaseSprite) {
-                        releaseSprite.color = cellColor;
-                        releaseNode.active = true; // Enable the node (it's disabled by default)
-                        console.log(`[WalkwayComponent] createCellNode - Applied cell color to release node and enabled it: (${cellColor.r}, ${cellColor.g}, ${cellColor.b}, ${cellColor.a})`);
-                    }
-                }
-            }
+            console.log(`[WalkwayComponent] createCellNode - Added Sprite component`);
         }
 
         // Set cell name
@@ -609,29 +504,16 @@ export class WalkwayComponent extends Component {
             console.log(`[WalkwayComponent] createCellNode - CellComponent already exists`);
         }
 
-        // Set CellComponent properties
+        // Set CellComponent properties and let it handle all UI updates
         if (cellComponent) {
             cellComponent.cellID = cell.cellID;
             cellComponent.showDebugText = this.showDebugText;
             
-            // If prefab has nodeBackground, make sure it's set
-            if (this.cellPrefab) {
-                const backgroundNode = cellNode.getChildByName(NODE_NAME_BACKGROUND);
-                if (backgroundNode && !cellComponent.nodeBackground) {
-                    cellComponent.nodeBackground = backgroundNode;
-                    console.log(`[WalkwayComponent] createCellNode - Set nodeBackground from prefab`);
-                }
-                
-                // If prefab has circle node, set it as nodeCircleBorder (for backward compatibility)
-                const circleNode = cellNode.getChildByName(NODE_NAME_CIRCLE);
-                if (circleNode && !cellComponent.nodeCircleBorder) {
-                    cellComponent.nodeCircleBorder = circleNode;
-                    console.log(`[WalkwayComponent] createCellNode - Set nodeCircleBorder from prefab`);
-                }
-                // Note: Normal node is handled separately for color setting
-            }
+            // CellComponent will find and configure child nodes automatically via findChildNodes()
+            // Then updateVisualState() will handle all cell type-specific UI updates
             
             console.log(`[WalkwayComponent] createCellNode - Set CellComponent properties: cellID=${cell.cellID}, showDebugText=${this.showDebugText}`);
+            console.log(`[WalkwayComponent] createCellNode - CellComponent will handle all UI updates based on cell type`);
         } else {
             console.warn(`[WalkwayComponent] createCellNode - Failed to get or create CellComponent`);
         }

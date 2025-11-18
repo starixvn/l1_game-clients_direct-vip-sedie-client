@@ -8,8 +8,9 @@
  * Data is read from game-board-data.ts
  */
 
-import { _decorator, Component, Node, Sprite, Color, Label } from "cc";
+import { _decorator, Component, Node, Sprite, Color, Label, UITransform } from "cc";
 import { gameBoardData, Base, Horse, BaseColor } from "../game-board-data";
+import { WALKWAY_ROW_COUNT, CELL_DIMENSION } from "../global-constants";
 
 const { ccclass, property } = _decorator;
 
@@ -115,8 +116,27 @@ export class BaseComponent extends Component {
             this.outerSprite = this.nodeOuterContainer.getComponent(Sprite);
         }
 
+        // Update base node size
+        this.updateBaseNodeSize();
+
         // Update visual state
         this.updateVisualState();
+    }
+
+    /**
+     * Update the base node size based on walkway dimensions
+     */
+    private updateBaseNodeSize() {
+        const transform = this.node.getComponent(UITransform);
+        if (!transform) {
+            console.warn(`BaseComponent: No UITransform found on base node ${this.baseID}`);
+            return;
+        }
+
+        // Calculate base size: (WALKWAY_ROW_COUNT - 1) * CELL_DIMENSION
+        const baseSize = (WALKWAY_ROW_COUNT - 1) * CELL_DIMENSION;
+        transform.setContentSize(baseSize, baseSize);
+        console.log(`BaseComponent: Updated base node size to ${baseSize}x${baseSize} for ${this.baseID}`);
     }
 
     /**

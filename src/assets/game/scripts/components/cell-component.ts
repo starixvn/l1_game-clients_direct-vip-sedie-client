@@ -9,7 +9,7 @@
  */
 
 import { _decorator, Component, Node, Sprite, Color, Label, UITransform, Button, EventTouch, Graphics, Vec2, Vec3 } from "cc";
-import { gameBoardData, Cell, CellType, Position, BaseColor } from "../game-board-data";
+import { gameBoardData, Cell, CellType, Position, BaseColor, GAME_CONSTANTS } from "../game-board-data";
 import { 
     CELL_DIMENSION,
     WALKWAY_LENGTH,
@@ -60,6 +60,18 @@ export class CellComponent extends Component {
     /** Circle border node (for SPAWN and NORMAL cells) */
     @property({ type: Node, tooltip: "Circle border node" })
     nodeCircleBorder: Node = null;
+
+    /** Normal node (for NORMAL cell type) */
+    @property({ type: Node, tooltip: "Normal node (for NORMAL cell type)" })
+    nodeNormal: Node = null;
+
+    /** Home-path node (for HOMEPATH cell type) */
+    @property({ type: Node, tooltip: "Home-path node (for HOMEPATH cell type)" })
+    nodeHomePath: Node = null;
+
+    /** Release node (for SPAWN cell type) */
+    @property({ type: Node, tooltip: "Release node (for SPAWN cell type)" })
+    nodeRelease: Node = null;
 
     /** Debug info container node */
     @property({ type: Node, tooltip: "Debug info container node" })
@@ -157,6 +169,9 @@ export class CellComponent extends Component {
         this.backgroundSprite = this.nodeBackground.getComponent(Sprite);
         console.log(`[CellComponent] initializeCell - Background sprite: ${this.backgroundSprite ? "found" : "not found"}`);
 
+        // Find child nodes if not assigned
+        this.findChildNodes();
+
         // Set up button for click handling
         this.setupButton();
 
@@ -171,6 +186,52 @@ export class CellComponent extends Component {
         this.updateVisualState();
         
         console.log(`[CellComponent] initializeCell - Initialization complete for ${this.cellID}`);
+    }
+
+    /**
+     * Find child nodes by name if not assigned
+     */
+    private findChildNodes() {
+        // Find normal node
+        if (!this.nodeNormal) {
+            this.nodeNormal = this.node.getChildByName("normal");
+            if (this.nodeNormal) {
+                console.log(`[CellComponent] findChildNodes - Found normal node`);
+            }
+        }
+
+        // Find home-path node
+        if (!this.nodeHomePath) {
+            this.nodeHomePath = this.node.getChildByName("home-path");
+            if (this.nodeHomePath) {
+                console.log(`[CellComponent] findChildNodes - Found home-path node`);
+            }
+        }
+
+        // Find release node
+        if (!this.nodeRelease) {
+            this.nodeRelease = this.node.getChildByName("release");
+            if (this.nodeRelease) {
+                console.log(`[CellComponent] findChildNodes - Found release node`);
+            }
+        }
+
+        // Find background node
+        if (!this.nodeBackground || this.nodeBackground === this.node) {
+            const backgroundNode = this.node.getChildByName("background");
+            if (backgroundNode) {
+                this.nodeBackground = backgroundNode;
+                console.log(`[CellComponent] findChildNodes - Found background node`);
+            }
+        }
+
+        // Find circle border node
+        if (!this.nodeCircleBorder) {
+            this.nodeCircleBorder = this.node.getChildByName("circle");
+            if (this.nodeCircleBorder) {
+                console.log(`[CellComponent] findChildNodes - Found circle node`);
+            }
+        }
     }
 
     /**
@@ -197,7 +258,7 @@ export class CellComponent extends Component {
      * Calculate homepath index based on walkway position
      */
     private calculateHomepathIndex() {
-        if (!this.cellData || this.cellData.cellType !== "HOMEPATH") {
+        if (!this.cellData || this.cellData.cellType !== GAME_CONSTANTS.CELL_TYPE_HOMEPATH) {
             this.homePathIndex = undefined;
             return;
         }
@@ -231,6 +292,10 @@ export class CellComponent extends Component {
             console.warn(`[CellComponent] updateVisualState - No cell data available`);
             return;
         }
+
+        // Update cell type specific UI (normal, home-path, release nodes)
+        console.log(`[CellComponent] updateVisualState - Updating cell type specific UI`);
+        this.updateCellTypeUI();
 
         // Update background color
         console.log(`[CellComponent] updateVisualState - Updating background color`);
@@ -266,6 +331,88 @@ export class CellComponent extends Component {
     }
 
     /**
+     * Update cell type specific UI (normal, home-path, release nodes)
+     * This method handles setting colors and enabling/disabling nodes based on cell type
+     */
+    private updateCellTypeUI() {
+        if (!this.cellData) {
+            return;
+        }
+
+        // Get base color for this cell
+        const base = gameBoardData.bases.find(b => b.ID === this.cellData.baseID);
+        const baseColor = base ? base.color : null;
+        const cellColor = baseColor && BASE_COLORS[baseColor] 
+            ? this.hexToColor(BASE_COLORS[baseColor])
+            : new Color(128, 128, 128, 255); // Default gray
+
+        console.log(`[CellComponent] updateCellTypeUI - Cell type: ${this.cellData.cellType}, baseColor: ${baseColor}`);
+
+        // Handle NORMAL cell type
+        if (this.cellData.cellType === GAME_CONSTANTS.CELL_TYPE_NORMAL) {
+            if (this.nodeNormal) {
+                const normalSprite = this.nodeNormal.getComponent(Sprite);
+                if (normalSprite) {
+                    normalSprite.color = cellColor;
+                    this.nodeNormal.active = true; // Enable the node (it's disabled by default)
+                    console.log(`[CellComponent] updateCellTypeUI - Applied color to normal node and enabled it`);
+                } else {
+                    console.log(`[CellComponent] updateCellTypeUI - Normal node found but no Sprite component`);
+                }
+            } else {
+                console.log(`[CellComponent] updateCellTypeUI - No normal node found for NORMAL cell`);
+            }
+        } else {
+            // Disable normal node for non-NORMAL cells
+            if (this.nodeNormal) {
+                this.nodeNormal.active = false;
+            }
+        }
+
+        // Handle HOMEPATH cell type
+        if (this.cellData.cellType === GAME_CONSTANTS.CELL_TYPE_HOMEPATH) {
+            if (this.nodeHomePath) {
+                const homePathSprite = this.nodeHomePath.getComponent(Sprite);
+                if (homePathSprite) {
+                    homePathSprite.color = cellColor;
+                    this.nodeHomePath.active = true; // Enable the node (it's disabled by default)
+                    console.log(`[CellComponent] updateCellTypeUI - Applied color to home-path node and enabled it`);
+                } else {
+                    console.log(`[CellComponent] updateCellTypeUI - Home-path node found but no Sprite component`);
+                }
+            } else {
+                console.log(`[CellComponent] updateCellTypeUI - No home-path node found for HOMEPATH cell`);
+            }
+        } else {
+            // Disable home-path node for non-HOMEPATH cells
+            if (this.nodeHomePath) {
+                this.nodeHomePath.active = false;
+            }
+        }
+
+        // Handle SPAWN cell type
+        if (this.cellData.cellType === GAME_CONSTANTS.CELL_TYPE_SPAWN) {
+            if (this.nodeRelease) {
+                const releaseSprite = this.nodeRelease.getComponent(Sprite);
+                if (releaseSprite) {
+                    releaseSprite.color = cellColor;
+                    this.nodeRelease.active = true; // Enable the node (it's disabled by default)
+                    console.log(`[CellComponent] updateCellTypeUI - Applied color to release node and enabled it`);
+                } else {
+                    console.log(`[CellComponent] updateCellTypeUI - Release node found but no Sprite component`);
+                }
+            } else {
+                console.log(`[CellComponent] updateCellTypeUI - No release node found for SPAWN cell`);
+            }
+        } else {
+            // Disable release node for non-SPAWN cells
+            if (this.nodeRelease) {
+                this.nodeRelease.active = false;
+            }
+        }
+    }
+
+    /**
      * Update background color based on cell type
      */
     private updateBackgroundColor() {
@@ -279,11 +426,11 @@ export class CellComponent extends Component {
 
         // For SPAWN and NORMAL cells, don't apply background color (we'll show a circle instead)
         // For HOMEPATH cells, apply background color with 0.25 opacity
-        if (this.cellData.cellType === "SPAWN" || this.cellData.cellType === "NORMAL") {
+        if (this.cellData.cellType === GAME_CONSTANTS.CELL_TYPE_SPAWN || this.cellData.cellType === GAME_CONSTANTS.CELL_TYPE_NORMAL) {
             // Transparent background, circle will be shown
             this.backgroundSprite.color = new Color(255, 255, 255, 0);
             this.originalColor = new Color(255, 255, 255, 0);
-        } else if (this.cellData.cellType === "HOMEPATH" && baseColor && BASE_COLORS[baseColor]) {
+        } else if (this.cellData.cellType === GAME_CONSTANTS.CELL_TYPE_HOMEPATH && baseColor && BASE_COLORS[baseColor]) {
             // Apply color with 0.25 opacity
             const hexColor = BASE_COLORS[baseColor];
             const color = this.hexToColor(hexColor);
@@ -315,7 +462,7 @@ export class CellComponent extends Component {
         }
 
         // Only show circle for SPAWN and NORMAL cells
-        if (this.cellData.cellType !== "SPAWN" && this.cellData.cellType !== "NORMAL") {
+        if (this.cellData.cellType !== GAME_CONSTANTS.CELL_TYPE_SPAWN && this.cellData.cellType !== GAME_CONSTANTS.CELL_TYPE_NORMAL) {
             console.log(`[CellComponent] updateCircleBorder - Cell type is ${this.cellData.cellType}, hiding circle`);
             this.nodeCircleBorder.active = false;
             return;
@@ -413,7 +560,7 @@ export class CellComponent extends Component {
             return;
         }
 
-        if (this.cellData.cellType === "HOMEPATH" && this.homePathIndex !== undefined) {
+        if (this.cellData.cellType === GAME_CONSTANTS.CELL_TYPE_HOMEPATH && this.homePathIndex !== undefined) {
             const label = this.nodeHomepathIndex.getComponent(Label);
             if (label) {
                 label.string = this.homePathIndex.toString();
