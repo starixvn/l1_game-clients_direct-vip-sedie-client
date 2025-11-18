@@ -2,13 +2,12 @@
  * Horse Placeholder Component
  * 
  * A wrapper component that provides a visual container for horses.
- * Shows a colored circle background where horses can be placed.
  * Can conditionally show or hide the actual horse inside.
  * 
  * Data is read from game-board-data.ts
  */
 
-import { _decorator, Component, Node, Sprite, Color, UITransform, instantiate, Prefab } from "cc";
+import { _decorator, Component, Node, UITransform, instantiate, Prefab, Sprite, Color } from "cc";
 import { BaseColor } from "../game-board-data";
 import { 
     CELL_DIMENSION,
@@ -59,16 +58,9 @@ export class HorsePlaceholderComponent extends Component {
     @property({ type: Node, tooltip: "Container node (if null, uses this node)" })
     containerNode: Node = null;
 
-    /** Circle background node */
-    @property({ type: Node, tooltip: "Circle background node" })
-    nodeCircle: Node = null;
-
     /** Horse node (child containing HorseComponent) */
     @property({ type: Node, tooltip: "Horse node (child with HorseComponent)" })
     nodeHorse: Node = null;
-
-    /** Circle sprite component */
-    private circleSprite: Sprite = null;
 
     /** Horse component reference */
     private horseComponent: HorseComponent = null;
@@ -85,6 +77,7 @@ export class HorsePlaceholderComponent extends Component {
 
     /**
      * Initialize the placeholder component
+     * Expects to be used with a prefab that has a child node: "Horse"
      */
     private initializePlaceholder() {
         // Use container node or this node
@@ -101,77 +94,92 @@ export class HorsePlaceholderComponent extends Component {
             containerTransform.setAnchorPoint(0.5, 0.5);
         }
 
-        // Create or get circle background
-        if (!this.nodeCircle) {
-            this.nodeCircle = new Node("Circle");
-            container.addChild(this.nodeCircle);
-            
-            const circleTransform = this.nodeCircle.addComponent(UITransform);
-            circleTransform.setContentSize(this.horseSize, this.horseSize);
-            circleTransform.setAnchorPoint(0.5, 0.5);
-            this.nodeCircle.setPosition(0, 0, 0);
-        }
-
-        this.circleSprite = this.nodeCircle.getComponent(Sprite);
-        if (!this.circleSprite) {
-            this.circleSprite = this.nodeCircle.addComponent(Sprite);
-        }
-
-        // Create or get horse node
+        // Find horse node from prefab children or create from horse prefab
         if (!this.nodeHorse) {
-            if (this.horsePrefab) {
-                this.nodeHorse = instantiate(this.horsePrefab);
-            } else {
-                this.nodeHorse = new Node("Horse");
-                const horseComponent = this.nodeHorse.addComponent(HorseComponent);
-                horseComponent.baseColor = this.baseColor;
-                horseComponent.horseSize = this.horseSize;
-            }
+            // First try to find existing horse node in prefab
+            this.nodeHorse = container.getChildByName("Horse");
             
-            container.addChild(this.nodeHorse);
-            this.nodeHorse.setPosition(0, 0, 0);
+            if (!this.nodeHorse) {
+                // If not found and horse prefab is provided, instantiate it
+                if (this.horsePrefab) {
+                    this.nodeHorse = instantiate(this.horsePrefab);
+                    container.addChild(this.nodeHorse);
+                    this.nodeHorse.setPosition(0, 0, 0);
+                } else {
+                    console.warn(`HorsePlaceholderComponent: Horse node not found in prefab and no horsePrefab provided, creating fallback`);
+                    this.nodeHorse = new Node("Horse");
+                    const horseComponent = this.nodeHorse.addComponent(HorseComponent);
+                    horseComponent.baseColor = this.baseColor;
+                    horseComponent.horseSize = this.horseSize;
+                    container.addChild(this.nodeHorse);
+                    this.nodeHorse.setPosition(0, 0, 0);
+                }
+            }
         }
 
         // Get horse component
         this.horseComponent = this.nodeHorse.getComponent(HorseComponent);
-        if (!this.horseComponent && !this.horsePrefab) {
-            // If using prefab, try to get component from child
+        if (!this.horseComponent) {
+            // Try to get from children (in case prefab has nested structure)
             this.horseComponent = this.nodeHorse.getComponentInChildren(HorseComponent);
         }
 
-        // Update visual state
-        this.updateVisualState();
+        // Set base color to horse node
+        this.updateHorseNodeColor();
+
+        // Wait for next frame to ensure HorseComponent's onLoad() has completed
+        // before updating visual state to avoid double initialization
+        this.scheduleOnce(() => {
+            this.updateVisualState();
+        }, 0);
     }
 
     /**
      * Update the visual state of the placeholder
      */
     public updateVisualState() {
-        // Update circle background
-        this.updateCircle();
-
+        // Update horse node color
+        this.updateHorseNodeColor();
+        
         // Update horse visibility and state
         this.updateHorse();
     }
 
     /**
-     * Update the circle background
+     * Update the color of the horse node based on base color
      */
-    private updateCircle() {
-        if (!this.circleSprite) {
+    private updateHorseNodeColor() {
+        if (!this.nodeHorse) {
             return;
         }
 
-        // Set circle color to default (light gray/white)
-        // In the React version, it uses BaseColors.DEFAULT which is likely a light color
-        this.circleSprite.color = new Color(240, 240, 240, 255); // Light gray background
-
-        // Ensure circle has proper size
-        const circleTransform = this.nodeCircle.getComponent(UITransform);
-        if (circleTransform) {
-            circleTransform.setContentSize(this.horseSize, this.horseSize);
-            circleTransform.setAnchorPoint(0.5, 0.5);
+        // Get or add Sprite component to horse node
+        let horseSprite = this.nodeHorse.getComponent(Sprite);
+        if (!horseSprite) {
+            horseSprite = this.nodeHorse.addComponent(Sprite);
         }
+
+        // Convert base color to Color object
+        const colorHex = BASE_COLORS[this.baseColor];
+        if (colorHex) {
+            const color = this.hexToColor(colorHex);
+            horseSprite.color = color;
+        }
+    }
+
+    /**
+     * Convert hex color string to Color object
+     */
+    private hexToColor(hex: string): Color {
+        // Remove # if present
+        hex = hex.replace('#', '');
+        
+        // Parse RGB
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        
+        return new Color(r, g, b, 255);
     }
 
     /**
@@ -187,9 +195,11 @@ export class HorsePlaceholderComponent extends Component {
 
         // Update horse component if it exists
         if (this.horseComponent) {
+            // Update properties
             this.horseComponent.baseColor = this.baseColor;
             this.horseComponent.horseID = this.horseID;
             this.horseComponent.isHovered = this.isHovered;
+            // Update visual state - this is safe to call after initialization
             this.horseComponent.updateVisualState();
         } else if (!this.isHorseHidden) {
             // Try to find or create horse component
@@ -199,11 +209,13 @@ export class HorsePlaceholderComponent extends Component {
             }
             if (!this.horseComponent) {
                 // Create horse component if it doesn't exist
+                // Note: onLoad() will be called automatically, which will initialize the component
                 this.horseComponent = this.nodeHorse.addComponent(HorseComponent);
                 this.horseComponent.baseColor = this.baseColor;
                 this.horseComponent.horseSize = this.horseSize;
                 this.horseComponent.horseID = this.horseID;
                 this.horseComponent.isHovered = this.isHovered;
+                // Don't call updateVisualState() here - let onLoad() handle initialization
             }
         }
     }

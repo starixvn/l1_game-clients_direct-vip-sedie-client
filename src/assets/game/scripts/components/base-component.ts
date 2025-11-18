@@ -8,9 +8,10 @@
  * Data is read from game-board-data.ts
  */
 
-import { _decorator, Component, Node, Sprite, Color, Label, UITransform } from "cc";
+import { _decorator, Component, Node, Sprite, Color, Label, UITransform, instantiate, Prefab, resources } from "cc";
 import { gameBoardData, Base, Horse, BaseColor } from "../game-board-data";
 import { WALKWAY_ROW_COUNT, CELL_DIMENSION } from "../global-constants";
+import { HorsePlaceholderComponent } from "./horse-placeholder-component";
 
 const { ccclass, property } = _decorator;
 
@@ -49,6 +50,10 @@ export class BaseComponent extends Component {
     @property({ type: Boolean, tooltip: "Whether base is spawnable (rolled 6)" })
     spawnable: boolean = false;
 
+    /** Whether this base is enabled/active in the current game */
+    @property({ type: Boolean, tooltip: "Whether this base is enabled/active" })
+    isBaseEnabled: boolean = true;
+
     /** Container node for the outer base border */
     @property({ type: Node, tooltip: "Outer container node (colored border)" })
     nodeOuterContainer: Node = null;
@@ -57,9 +62,13 @@ export class BaseComponent extends Component {
     @property({ type: Node, tooltip: "Inner container node (horse area)" })
     nodeInnerContainer: Node = null;
 
-    /** Array of horse placeholder nodes (should be 4) */
-    @property({ type: [Node], tooltip: "Horse placeholder nodes (4 horses)" })
-    horsePlaceholders: Node[] = [];
+    /** Horse placeholder prefab (will be instantiated dynamically) */
+    @property({ type: Prefab, tooltip: "Horse placeholder prefab (will be instantiated for each horse)" })
+    horsePlaceholderPrefab: Prefab = null;
+
+    /** Container node for horse placeholders (if null, uses nodeInnerContainer or this.node) */
+    @property({ type: Node, tooltip: "Container node for horse placeholders (if null, uses nodeInnerContainer)" })
+    horsePlaceholdersContainer: Node = null;
 
     /** Debug info label (optional) */
     @property({ type: Node, tooltip: "Debug info label node (optional)" })
@@ -73,6 +82,12 @@ export class BaseComponent extends Component {
 
     /** Map of horse IDs to their data */
     private horsesMap: Map<string, Horse> = new Map();
+
+    /** Map of horse IDs to their placeholder component instances */
+    private horsePlaceholdersMap: Map<string, HorsePlaceholderComponent> = new Map();
+
+    /** Path to horse placeholder prefab resource */
+    private readonly HORSE_PLACEHOLDER_PREFAB_PATH = "game/prefabs/horse-placeholder";
 
     /** Color mapping for bases */
     private readonly colorMap: Record<BaseColor, Color> = {
@@ -119,8 +134,8 @@ export class BaseComponent extends Component {
         // Update base node size
         this.updateBaseNodeSize();
 
-        // Update visual state
-        this.updateVisualState();
+        // Load and create horse placeholders
+        this.loadAndCreateHorsePlaceholders();
     }
 
     /**
@@ -189,7 +204,7 @@ export class BaseComponent extends Component {
         // - Changing opacity
         // - Adding a glow effect
         // - Changing scale
-        if (this.spawnable && this.enabled) {
+        if (this.spawnable && this.isBaseEnabled) {
             // Make it more visible when spawnable
             this.nodeInnerContainer.setScale(1.1, 1.1, 1);
         } else {
@@ -198,33 +213,143 @@ export class BaseComponent extends Component {
     }
 
     /**
+     * Load horse placeholder prefab and create instances dynamically
+     */
+    private loadAndCreateHorsePlaceholders() {
+        // Get container for horse placeholders
+        const container = this.horsePlaceholdersContainer || this.nodeInnerContainer || this.node;
+        
+        if (!container) {
+            console.warn(`BaseComponent: No container available for horse placeholders`);
+            return;
+        }
+
+        // Try to load prefab if not assigned
+        if (!this.horsePlaceholderPrefab) {
+            console.log(`BaseComponent: Horse placeholder prefab not assigned, attempting to load from resources`);
+            resources.load(this.HORSE_PLACEHOLDER_PREFAB_PATH, Prefab, (err, prefab) => {
+                if (err) {
+                    console.warn(`BaseComponent: Failed to load horse placeholder prefab from ${this.HORSE_PLACEHOLDER_PREFAB_PATH}: ${err.message}`);
+                    console.log(`BaseComponent: Will create placeholders programmatically instead`);
+                    this.createHorsePlaceholders(container);
+                    return;
+                }
+                
+                if (prefab) {
+                    this.horsePlaceholderPrefab = prefab;
+                    console.log(`BaseComponent: Successfully loaded horse placeholder prefab`);
+                }
+                
+                this.createHorsePlaceholders(container);
+            });
+        } else {
+            this.createHorsePlaceholders(container);
+        }
+    }
+
+    /**
+     * Create horse placeholder instances from prefab
+     */
+    private createHorsePlaceholders(container: Node) {
+        if (!this.baseData) {
+            console.warn(`BaseComponent: Cannot create placeholders, base data not available`);
+            return;
+        }
+
+        console.log(`BaseComponent: Creating ${this.baseData.horseIDs.length} horse placeholders for base ${this.baseID}`);
+
+        // Clear existing placeholders
+        this.horsePlaceholdersMap.clear();
+        container.removeAllChildren();
+
+        // Create a placeholder for each horse
+        this.baseData.horseIDs.forEach((horseID, index) => {
+            const horse = this.horsesMap.get(horseID);
+            if (!horse) {
+                console.warn(`BaseComponent: Horse data not found for ${horseID}`);
+                return;
+            }
+
+            let placeholderNode: Node;
+
+            // Instantiate from prefab if available
+            if (this.horsePlaceholderPrefab) {
+                placeholderNode = instantiate(this.horsePlaceholderPrefab);
+                console.log(`BaseComponent: Instantiated placeholder prefab for ${horseID}`);
+            } else {
+                // Create programmatically as fallback
+                console.log(`BaseComponent: Creating placeholder programmatically for ${horseID} (no prefab available)`);
+                placeholderNode = new Node(`HorsePlaceholder_${horseID}`);
+                const placeholderComponent = placeholderNode.addComponent(HorsePlaceholderComponent);
+                placeholderComponent.baseColor = this.baseData.color;
+                placeholderComponent.horseID = horseID;
+            }
+
+            // Get or add HorsePlaceholderComponent
+            let placeholderComponent = placeholderNode.getComponent(HorsePlaceholderComponent);
+            if (!placeholderComponent) {
+                placeholderComponent = placeholderNode.addComponent(HorsePlaceholderComponent);
+            }
+
+            // Configure the placeholder component
+            if (placeholderComponent) {
+                // Set base color from base data
+                placeholderComponent.setBaseColor(this.baseData.color);
+                
+                // Set horse ID
+                placeholderComponent.setHorseID(horseID);
+                
+                // Store reference
+                this.horsePlaceholdersMap.set(horseID, placeholderComponent);
+            }
+
+            // Add to container
+            container.addChild(placeholderNode);
+        });
+
+        // Update visual state after creating all placeholders
+        this.updateVisualState();
+    }
+
+    /**
      * Update horse placeholders visibility and state
+     * Uses HorsePlaceholderComponent to render horses with HorseComponent
      */
     private updateHorsePlaceholders() {
         if (!this.baseData) {
             return;
         }
 
-        this.baseData.horseIDs.forEach((horseID, index) => {
-            if (index >= this.horsePlaceholders.length) {
-                return;
-            }
-
-            const placeholder = this.horsePlaceholders[index];
+        this.baseData.horseIDs.forEach((horseID) => {
+            const placeholderComponent = this.horsePlaceholdersMap.get(horseID);
             const horse = this.horsesMap.get(horseID);
 
-            if (!placeholder || !horse) {
+            if (!placeholderComponent) {
+                console.warn(`BaseComponent: Placeholder component not found for ${horseID}`);
                 return;
             }
 
-            // Hide horse if base is disabled OR horse is already spawned/retired
-            const isHorseHidden = !this.enabled || horse.isSpawned || horse.isRetired;
-            placeholder.active = !isHorseHidden;
+            if (!horse) {
+                console.warn(`BaseComponent: Horse data not found for ${horseID}`);
+                return;
+            }
 
-            // You can add additional visual updates here:
-            // - Change horse color based on base color
-            // - Add hover effects
-            // - Show horse number
+            // Configure the placeholder component with horse data
+            // Set base color from base data (in case it changed)
+            placeholderComponent.setBaseColor(this.baseData.color);
+            
+            // Set horse ID (in case it changed)
+            placeholderComponent.setHorseID(horseID);
+            
+            // Determine if horse should be hidden:
+            // Hide if base is disabled OR horse is already spawned/retired
+            const isHorseHidden = !this.isBaseEnabled || horse.isSpawned || horse.isRetired;
+            placeholderComponent.setHorseHidden(isHorseHidden);
+            
+            // Update visual state to apply changes
+            placeholderComponent.updateVisualState();
+            
+            console.log(`BaseComponent: Updated placeholder for ${horseID}: hidden=${isHorseHidden}, baseColor=${this.baseData.color}`);
         });
     }
 
@@ -263,7 +388,7 @@ export class BaseComponent extends Component {
         ).length;
 
         let status = "";
-        if (!this.enabled) {
+        if (!this.isBaseEnabled) {
             status = "DISABLED";
         } else if (this.hasWon) {
             status = "WINNER!";
@@ -287,7 +412,7 @@ export class BaseComponent extends Component {
      * Set the enabled state of the base
      */
     public setEnabled(enabled: boolean) {
-        this.enabled = enabled;
+        this.isBaseEnabled = enabled;
         this.updateVisualState();
     }
 

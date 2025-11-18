@@ -28,7 +28,7 @@ export const UNIT_SIZE = 1;                                   // Base unit size:
 export const WALKWAY_ROW_COUNT = 7;                           // Number of rows/columns in walkway (WALKWAY_LENGTH and BASE_SIZE both use this)
 export const WALKWAY_COLUMN_COUNT = 3;                        // Number of columns/rows in walkway (WALKWAY_WIDTH and HOME_SIZE both use this)
 export const INNER_BASE_DIMENSION = 4;                        // Inner base dimension (INNER_BASE_SIZE)
-export const HORSE_PLACEHOLDER_DIMENSION = 2;                 // Horse placeholder dimension
+export const HORSE_PLACEHOLDER_DIMENSION = 1;                 // Horse placeholder dimension
 
 // Pixel dimensions
 export const CELL_DIMENSION = 50;                             // Pixels per cell

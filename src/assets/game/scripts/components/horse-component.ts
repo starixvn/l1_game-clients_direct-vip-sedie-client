@@ -5,10 +5,13 @@
  * Horses are the pieces that players move around the board.
  * Each horse belongs to a specific player (represented by baseColor).
  * 
+ * This component renders the horse icon (Unicode chess knight) and horse number.
+ * For horses in the base, use HorsePlaceholderComponent which wraps this component.
+ * 
  * Data is read from game-board-data.ts
  */
 
-import { _decorator, Component, Node, Sprite, Color, Label, UITransform, tween, Vec3 } from "cc";
+import { _decorator, Component, Node, Label, UITransform, tween, Vec3, Color, Sprite } from "cc";
 import { BaseColor } from "../game-board-data";
 import { 
     CELL_DIMENSION,
@@ -61,6 +64,7 @@ export class HorseComponent extends Component {
     @property({ type: String, tooltip: "Horse ID (e.g., BASE_1_HORSE_1)" })
     horseID: string = "";
 
+
     /** Node for the horse icon (Unicode character) */
     @property({ type: Node, tooltip: "Horse icon label node" })
     nodeHorseIcon: Node = null;
@@ -89,26 +93,49 @@ export class HorseComponent extends Component {
      * Initialize the horse component
      */
     private initializeHorse() {
-        // Set up node size
+        // Set up node size - horse size equals CELL_DIMENSION
         const transform = this.node.getComponent(UITransform);
         if (!transform) {
             const newTransform = this.node.addComponent(UITransform);
-            newTransform.setContentSize(this.horseSize * 0.8, this.horseSize * 0.8);
+            newTransform.setContentSize(this.horseSize, this.horseSize);
             newTransform.setAnchorPoint(0.5, 0.5);
         } else {
-            transform.setContentSize(this.horseSize * 0.8, this.horseSize * 0.8);
+            transform.setContentSize(this.horseSize, this.horseSize);
             transform.setAnchorPoint(0.5, 0.5);
         }
 
         // Create or get horse icon label
         if (!this.nodeHorseIcon) {
-            this.nodeHorseIcon = new Node("HorseIcon");
-            this.node.addChild(this.nodeHorseIcon);
-            
-            const iconTransform = this.nodeHorseIcon.addComponent(UITransform);
-            iconTransform.setContentSize(this.horseSize * 0.8, this.horseSize * 0.8);
-            iconTransform.setAnchorPoint(0.5, 0.5);
-            this.nodeHorseIcon.setPosition(0, 0, 0);
+            // First try to find existing node by name (from prefab or previous initialization)
+            this.nodeHorseIcon = this.node.getChildByName("HorseIcon");
+            if (!this.nodeHorseIcon) {
+                // Only create if it doesn't exist to avoid duplicates
+                this.nodeHorseIcon = new Node("HorseIcon");
+                this.node.addChild(this.nodeHorseIcon);
+                
+                const iconTransform = this.nodeHorseIcon.addComponent(UITransform);
+                iconTransform.setContentSize(this.horseSize * 0.8, this.horseSize * 0.8);
+                iconTransform.setAnchorPoint(0.5, 0.5);
+                this.nodeHorseIcon.setPosition(0, 0, 0);
+            }
+        } else {
+            // If nodeHorseIcon is already assigned, verify it's still a child
+            // This prevents issues if node was removed or replaced
+            if (this.nodeHorseIcon.parent !== this.node) {
+                // Re-find or recreate if parent changed
+                const existingNode = this.node.getChildByName("HorseIcon");
+                if (existingNode) {
+                    this.nodeHorseIcon = existingNode;
+                } else {
+                    // Node was lost, need to recreate
+                    this.nodeHorseIcon = new Node("HorseIcon");
+                    this.node.addChild(this.nodeHorseIcon);
+                    const iconTransform = this.nodeHorseIcon.addComponent(UITransform);
+                    iconTransform.setContentSize(this.horseSize * 0.8, this.horseSize * 0.8);
+                    iconTransform.setAnchorPoint(0.5, 0.5);
+                    this.nodeHorseIcon.setPosition(0, 0, 0);
+                }
+            }
         }
 
         this.horseIconLabel = this.nodeHorseIcon.getComponent(Label);
@@ -116,22 +143,54 @@ export class HorseComponent extends Component {
             this.horseIconLabel = this.nodeHorseIcon.addComponent(Label);
         }
 
+        // Ensure HorseIcon node has a Sprite component for background color
+        let iconSprite = this.nodeHorseIcon.getComponent(Sprite);
+        if (!iconSprite) {
+            iconSprite = this.nodeHorseIcon.addComponent(Sprite);
+        }
+
         // Create or get horse number label
         const horseNumber = this.extractHorseNumber(this.horseID);
         if (horseNumber) {
             if (!this.nodeHorseNumber) {
-                this.nodeHorseNumber = new Node("HorseNumber");
-                this.node.addChild(this.nodeHorseNumber);
-                
-                const numberTransform = this.nodeHorseNumber.addComponent(UITransform);
-                numberTransform.setContentSize(this.horseSize * 0.3, this.horseSize * 0.3);
-                numberTransform.setAnchorPoint(0.5, 0.5);
-                // Position at bottom-right of horse icon
-                this.nodeHorseNumber.setPosition(
-                    this.horseSize * 0.25, 
-                    -this.horseSize * 0.25, 
-                    0
-                );
+                // First try to find existing node by name (from prefab or previous initialization)
+                this.nodeHorseNumber = this.node.getChildByName("HorseNumber");
+                if (!this.nodeHorseNumber) {
+                    // Only create if it doesn't exist to avoid duplicates
+                    this.nodeHorseNumber = new Node("HorseNumber");
+                    this.node.addChild(this.nodeHorseNumber);
+                    
+                    const numberTransform = this.nodeHorseNumber.addComponent(UITransform);
+                    numberTransform.setContentSize(this.horseSize * 0.3, this.horseSize * 0.3);
+                    numberTransform.setAnchorPoint(0.5, 0.5);
+                    // Position at bottom-right of horse icon
+                    this.nodeHorseNumber.setPosition(
+                        this.horseSize * 0.25, 
+                        -this.horseSize * 0.25, 
+                        0
+                    );
+                }
+            } else {
+                // If nodeHorseNumber is already assigned, verify it's still a child
+                if (this.nodeHorseNumber.parent !== this.node) {
+                    // Re-find or recreate if parent changed
+                    const existingNode = this.node.getChildByName("HorseNumber");
+                    if (existingNode) {
+                        this.nodeHorseNumber = existingNode;
+                    } else {
+                        // Node was lost, need to recreate
+                        this.nodeHorseNumber = new Node("HorseNumber");
+                        this.node.addChild(this.nodeHorseNumber);
+                        const numberTransform = this.nodeHorseNumber.addComponent(UITransform);
+                        numberTransform.setContentSize(this.horseSize * 0.3, this.horseSize * 0.3);
+                        numberTransform.setAnchorPoint(0.5, 0.5);
+                        this.nodeHorseNumber.setPosition(
+                            this.horseSize * 0.25, 
+                            -this.horseSize * 0.25, 
+                            0
+                        );
+                    }
+                }
             }
 
             this.horseNumberLabel = this.nodeHorseNumber.getComponent(Label);
@@ -173,26 +232,43 @@ export class HorseComponent extends Component {
      * Update the horse icon (Unicode character)
      */
     private updateHorseIcon() {
-        if (!this.horseIconLabel) {
+        if (!this.nodeHorseIcon) {
             return;
         }
 
-        // Set Unicode character
-        this.horseIconLabel.string = this.HORSE_UNICODE;
-        
-        // Set color based on base color
-        const colorHex = BASE_COLORS[this.baseColor];
-        const color = this.hexToColor(colorHex);
-        this.horseIconLabel.color = color;
+        // Update HorseIcon node background color based on base color
+        const iconSprite = this.nodeHorseIcon.getComponent(Sprite);
+        if (iconSprite) {
+            const colorHex = BASE_COLORS[this.baseColor];
+            if (colorHex) {
+                const color = this.hexToColor(colorHex);
+                iconSprite.color = color;
+            }
+        }
 
-        // Configure label
-        this.horseIconLabel.fontSize = Math.floor(this.horseSize * 0.6);
-        this.horseIconLabel.fontFamily = "Arial";
-        this.horseIconLabel.horizontalAlign = Label.HorizontalAlign.CENTER;
-        this.horseIconLabel.verticalAlign = Label.VerticalAlign.CENTER;
-        this.horseIconLabel.overflow = Label.Overflow.SHRINK;
-        (this.horseIconLabel as any)._isSystemFontUsed = true;
-        (this.horseIconLabel as any)._font = null;
+        // Update label if it exists
+        if (!this.horseIconLabel) {
+            this.horseIconLabel = this.nodeHorseIcon.getComponent(Label);
+        }
+
+        if (this.horseIconLabel) {
+            // Set Unicode character
+            this.horseIconLabel.string = this.HORSE_UNICODE;
+            
+            // Set label color based on base color (for the icon character itself)
+            const colorHex = BASE_COLORS[this.baseColor];
+            const color = this.hexToColor(colorHex);
+            this.horseIconLabel.color = color;
+
+            // Configure label
+            this.horseIconLabel.fontSize = Math.floor(this.horseSize * 0.6);
+            this.horseIconLabel.fontFamily = "Arial";
+            this.horseIconLabel.horizontalAlign = Label.HorizontalAlign.CENTER;
+            this.horseIconLabel.verticalAlign = Label.VerticalAlign.CENTER;
+            this.horseIconLabel.overflow = Label.Overflow.SHRINK;
+            (this.horseIconLabel as any)._isSystemFontUsed = true;
+            (this.horseIconLabel as any)._font = null;
+        }
     }
 
     /**
@@ -318,6 +394,7 @@ export class HorseComponent extends Component {
         this.horseID = horseID;
         this.updateVisualState();
     }
+
 
     /**
      * Get the horse number from the horse ID
