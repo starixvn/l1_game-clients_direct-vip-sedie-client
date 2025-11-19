@@ -9,12 +9,15 @@
  */
 
 import { _decorator, Component, Node, Sprite, Color, Label, UITransform, Button, EventTouch, Graphics, Vec2, Vec3 } from "cc";
-import { gameBoardData, Cell, CellType, Position, BaseColor, GAME_CONSTANTS } from "../game-board-data";
+import { Cell, CellType, Position, BaseColor, GAME_CONSTANTS } from "../game-board-data";
 import { 
     CELL_DIMENSION,
-    WALKWAY_LENGTH,
-    BASE_COLORS 
+    WALKWAY_LENGTH
 } from "../global-constants";
+import { gameDataService } from "../services/game-data-service";
+import { getBaseColor, brightenColor } from "../utils/color-utils";
+import { CELL_CONFIG } from "../utils/cell-config";
+import { Logger } from "../utils/logger";
 
 const { ccclass, property } = _decorator;
 
@@ -118,7 +121,6 @@ export class CellComponent extends Component {
     private homePathIndex: number | undefined = undefined;
 
     onLoad() {
-        console.log(`[CellComponent] onLoad - cellID: ${this.cellID}, node: ${this.node.name}`);
         this.initializeCell();
     }
 
@@ -126,111 +128,53 @@ export class CellComponent extends Component {
      * Initialize the cell with data from gameBoardData
      */
     private initializeCell() {
-        console.log(`[CellComponent] initializeCell - Starting initialization for cellID: ${this.cellID}`);
-        
         if (!this.cellID) {
-            console.warn("[CellComponent] initializeCell - cellID is not set");
+            Logger.warn("CellComponent", "cellID is not set");
             return;
         }
 
-        // Find cell data from all positions
-        let found = false;
-        for (const position in gameBoardData.cells) {
-            const positionCells = gameBoardData.cells[position];
-            if (positionCells[this.cellID]) {
-                this.cellData = positionCells[this.cellID];
-                found = true;
-                console.log(`[CellComponent] initializeCell - Found cell in position: ${position}`);
-                break;
-            }
-        }
-
+        this.cellData = gameDataService.getCell(this.cellID);
         if (!this.cellData) {
-            console.warn(`[CellComponent] initializeCell - Cell data not found for ${this.cellID}`);
+            Logger.warn("CellComponent", `Cell data not found for ${this.cellID}`);
             return;
         }
 
-        console.log(`[CellComponent] initializeCell - Found cell data:`, {
-            cellID: this.cellData.cellID,
-            cellType: this.cellData.cellType,
-            baseID: this.cellData.baseID,
-            row: this.cellData.row,
-            column: this.cellData.column,
-            position: this.cellData.position
-        });
-
-        // Get background sprite
         if (!this.nodeBackground) {
             this.nodeBackground = this.node;
-            console.log(`[CellComponent] initializeCell - Using this node as background: ${this.nodeBackground.name}`);
-        } else {
-            console.log(`[CellComponent] initializeCell - Using specified background node: ${this.nodeBackground.name}`);
         }
         this.backgroundSprite = this.nodeBackground.getComponent(Sprite);
-        console.log(`[CellComponent] initializeCell - Background sprite: ${this.backgroundSprite ? "found" : "not found"}`);
 
-        // Find child nodes if not assigned
         this.findChildNodes();
-
-        // Set up button for click handling
         this.setupButton();
-
-        // Calculate homepath index if needed
         this.calculateHomepathIndex();
-        if (this.homePathIndex !== undefined) {
-            console.log(`[CellComponent] initializeCell - Homepath index calculated: ${this.homePathIndex}`);
-        }
-
-        // Update visual state
-        console.log(`[CellComponent] initializeCell - Updating visual state...`);
         this.updateVisualState();
-        
-        console.log(`[CellComponent] initializeCell - Initialization complete for ${this.cellID}`);
     }
 
     /**
      * Find child nodes by name if not assigned
      */
     private findChildNodes() {
-        // Find normal node
         if (!this.nodeNormal) {
             this.nodeNormal = this.node.getChildByName("normal");
-            if (this.nodeNormal) {
-                console.log(`[CellComponent] findChildNodes - Found normal node`);
-            }
         }
 
-        // Find home-path node
         if (!this.nodeHomePath) {
             this.nodeHomePath = this.node.getChildByName("home-path");
-            if (this.nodeHomePath) {
-                console.log(`[CellComponent] findChildNodes - Found home-path node`);
-            }
         }
 
-        // Find release node
         if (!this.nodeRelease) {
             this.nodeRelease = this.node.getChildByName("release");
-            if (this.nodeRelease) {
-                console.log(`[CellComponent] findChildNodes - Found release node`);
-            }
         }
 
-        // Find background node
         if (!this.nodeBackground || this.nodeBackground === this.node) {
             const backgroundNode = this.node.getChildByName("background");
             if (backgroundNode) {
                 this.nodeBackground = backgroundNode;
-                console.log(`[CellComponent] findChildNodes - Found background node`);
             }
         }
 
-        // Find circle border node
         if (!this.nodeCircleBorder) {
             this.nodeCircleBorder = this.node.getChildByName("circle");
-            if (this.nodeCircleBorder) {
-                console.log(`[CellComponent] findChildNodes - Found circle node`);
-            }
         }
     }
 
@@ -238,20 +182,12 @@ export class CellComponent extends Component {
      * Set up button component for click handling
      */
     private setupButton() {
-        console.log(`[CellComponent] setupButton - Setting up button for ${this.cellID}`);
-        
-        // Add Button component if not present
         this.button = this.node.getComponent(Button);
         if (!this.button) {
-            console.log(`[CellComponent] setupButton - Adding Button component`);
             this.button = this.node.addComponent(Button);
-        } else {
-            console.log(`[CellComponent] setupButton - Button component already exists`);
         }
 
-        // Set up click event
         this.node.on(Button.EventType.CLICK, this.onCellClick, this);
-        console.log(`[CellComponent] setupButton - Button click event registered`);
     }
 
     /**
@@ -286,48 +222,23 @@ export class CellComponent extends Component {
      * Update the visual state of the cell
      */
     public updateVisualState() {
-        console.log(`[CellComponent] updateVisualState - Updating visual state for ${this.cellID}`);
-        
         if (!this.cellData) {
-            console.warn(`[CellComponent] updateVisualState - No cell data available`);
+            Logger.warn("CellComponent", "No cell data available");
             return;
         }
 
-        // Update cell type specific UI (normal, home-path, release nodes)
-        console.log(`[CellComponent] updateVisualState - Updating cell type specific UI`);
         this.updateCellTypeUI();
-
-        // Update background color
-        console.log(`[CellComponent] updateVisualState - Updating background color`);
         this.updateBackgroundColor();
-
-        // Update circle border
-        console.log(`[CellComponent] updateVisualState - Updating circle border`);
         this.updateCircleBorder();
 
-        // Update debug info
         if (this.showDebugText) {
-            console.log(`[CellComponent] updateVisualState - Updating debug info`);
             this.updateDebugInfo();
         }
 
-        // Update homepath index
-        console.log(`[CellComponent] updateVisualState - Updating homepath index`);
         this.updateHomepathIndex();
-
-        // Update odds display
-        console.log(`[CellComponent] updateVisualState - Updating odds display`);
         this.updateOddsDisplay();
-
-        // Update popover
-        console.log(`[CellComponent] updateVisualState - Updating popover`);
         this.updatePopover();
-
-        // Update highlighting
-        console.log(`[CellComponent] updateVisualState - Updating highlighting (isHighlighted: ${this.isHighlighted})`);
         this.updateHighlighting();
-        
-        console.log(`[CellComponent] updateVisualState - Visual state update complete`);
     }
 
     /**
@@ -339,76 +250,43 @@ export class CellComponent extends Component {
             return;
         }
 
-        // Get base color for this cell
-        const base = gameBoardData.bases.find(b => b.ID === this.cellData.baseID);
+        // Get base color for this cell using service
+        const base = gameDataService.getBase(this.cellData.baseID);
         const baseColor = base ? base.color : null;
-        const cellColor = baseColor && BASE_COLORS[baseColor] 
-            ? this.hexToColor(BASE_COLORS[baseColor])
-            : new Color(128, 128, 128, 255); // Default gray
-
-        console.log(`[CellComponent] updateCellTypeUI - Cell type: ${this.cellData.cellType}, baseColor: ${baseColor}`);
+        const cellColor = baseColor ? getBaseColor(baseColor) : new Color(128, 128, 128, 255);
 
         // Handle NORMAL cell type
         if (this.cellData.cellType === GAME_CONSTANTS.CELL_TYPE_NORMAL) {
-            if (this.nodeNormal) {
-                const normalSprite = this.nodeNormal.getComponent(Sprite);
-                if (normalSprite) {
-                    normalSprite.color = cellColor;
-                    this.nodeNormal.active = true; // Enable the node (it's disabled by default)
-                    console.log(`[CellComponent] updateCellTypeUI - Applied color to normal node and enabled it`);
-                } else {
-                    console.log(`[CellComponent] updateCellTypeUI - Normal node found but no Sprite component`);
-                }
-            } else {
-                console.log(`[CellComponent] updateCellTypeUI - No normal node found for NORMAL cell`);
-            }
-        } else {
-            // Disable normal node for non-NORMAL cells
-            if (this.nodeNormal) {
-                this.nodeNormal.active = false;
-            }
+            this.updateNodeColor(this.nodeNormal, cellColor);
+        } else if (this.nodeNormal) {
+            this.nodeNormal.active = false;
         }
 
         // Handle HOMEPATH cell type
         if (this.cellData.cellType === GAME_CONSTANTS.CELL_TYPE_HOMEPATH) {
-            if (this.nodeHomePath) {
-                const homePathSprite = this.nodeHomePath.getComponent(Sprite);
-                if (homePathSprite) {
-                    homePathSprite.color = cellColor;
-                    this.nodeHomePath.active = true; // Enable the node (it's disabled by default)
-                    console.log(`[CellComponent] updateCellTypeUI - Applied color to home-path node and enabled it`);
-                } else {
-                    console.log(`[CellComponent] updateCellTypeUI - Home-path node found but no Sprite component`);
-                }
-            } else {
-                console.log(`[CellComponent] updateCellTypeUI - No home-path node found for HOMEPATH cell`);
-            }
-        } else {
-            // Disable home-path node for non-HOMEPATH cells
-            if (this.nodeHomePath) {
-                this.nodeHomePath.active = false;
-            }
+            this.updateNodeColor(this.nodeHomePath, cellColor);
+        } else if (this.nodeHomePath) {
+            this.nodeHomePath.active = false;
         }
 
         // Handle SPAWN cell type
         if (this.cellData.cellType === GAME_CONSTANTS.CELL_TYPE_SPAWN) {
-            if (this.nodeRelease) {
-                const releaseSprite = this.nodeRelease.getComponent(Sprite);
-                if (releaseSprite) {
-                    releaseSprite.color = cellColor;
-                    this.nodeRelease.active = true; // Enable the node (it's disabled by default)
-                    console.log(`[CellComponent] updateCellTypeUI - Applied color to release node and enabled it`);
-                } else {
-                    console.log(`[CellComponent] updateCellTypeUI - Release node found but no Sprite component`);
-                }
-            } else {
-                console.log(`[CellComponent] updateCellTypeUI - No release node found for SPAWN cell`);
-            }
-        } else {
-            // Disable release node for non-SPAWN cells
-            if (this.nodeRelease) {
-                this.nodeRelease.active = false;
-            }
+            this.updateNodeColor(this.nodeRelease, cellColor);
+        } else if (this.nodeRelease) {
+            this.nodeRelease.active = false;
+        }
+    }
+
+    /**
+     * Update node color and enable it
+     */
+    private updateNodeColor(node: Node | null, color: Color): void {
+        if (!node) return;
+
+        const sprite = node.getComponent(Sprite);
+        if (sprite) {
+            sprite.color = color;
+            node.active = true;
         }
     }
 
@@ -420,8 +298,8 @@ export class CellComponent extends Component {
             return;
         }
 
-        // Find base for this cell
-        const base = gameBoardData.bases.find(b => b.ID === this.cellData.baseID);
+        // Find base for this cell using service
+        const base = gameDataService.getBase(this.cellData.baseID);
         const baseColor = base ? base.color : null;
 
         // For SPAWN and NORMAL cells, don't apply background color (we'll show a circle instead)
@@ -430,19 +308,21 @@ export class CellComponent extends Component {
             // Transparent background, circle will be shown
             this.backgroundSprite.color = new Color(255, 255, 255, 0);
             this.originalColor = new Color(255, 255, 255, 0);
-        } else if (this.cellData.cellType === GAME_CONSTANTS.CELL_TYPE_HOMEPATH && baseColor && BASE_COLORS[baseColor]) {
+        } else if (this.cellData.cellType === GAME_CONSTANTS.CELL_TYPE_HOMEPATH && baseColor) {
             // Apply color with 0.25 opacity
-            const hexColor = BASE_COLORS[baseColor];
-            const color = this.hexToColor(hexColor);
-            color.a = Math.floor(255 * 0.25);
-            this.backgroundSprite.color = color;
-            this.originalColor = color.clone();
-        } else if (baseColor && BASE_COLORS[baseColor]) {
+            const color = getBaseColor(baseColor);
+            if (color) {
+                color.a = Math.floor(255 * 0.25);
+                this.backgroundSprite.color = color;
+                this.originalColor = color.clone();
+            }
+        } else if (baseColor) {
             // Normal background color
-            const hexColor = BASE_COLORS[baseColor];
-            const color = this.hexToColor(hexColor);
-            this.backgroundSprite.color = color;
-            this.originalColor = color.clone();
+            const color = getBaseColor(baseColor);
+            if (color) {
+                this.backgroundSprite.color = color;
+                this.originalColor = color.clone();
+            }
         } else {
             // Default gray
             this.backgroundSprite.color = new Color(128, 128, 128, 255);
@@ -454,61 +334,55 @@ export class CellComponent extends Component {
      * Update circle border for SPAWN and NORMAL cells
      */
     private updateCircleBorder() {
-        console.log(`[CellComponent] updateCircleBorder - Updating circle border for ${this.cellID}`);
-        
         if (!this.nodeCircleBorder || !this.cellData) {
-            console.log(`[CellComponent] updateCircleBorder - Skipping (nodeCircleBorder: ${!!this.nodeCircleBorder}, cellData: ${!!this.cellData})`);
             return;
         }
 
-        // Only show circle for SPAWN and NORMAL cells
-        if (this.cellData.cellType !== GAME_CONSTANTS.CELL_TYPE_SPAWN && this.cellData.cellType !== GAME_CONSTANTS.CELL_TYPE_NORMAL) {
-            console.log(`[CellComponent] updateCircleBorder - Cell type is ${this.cellData.cellType}, hiding circle`);
+        const isCircleCell = this.cellData.cellType === GAME_CONSTANTS.CELL_TYPE_SPAWN || 
+                            this.cellData.cellType === GAME_CONSTANTS.CELL_TYPE_NORMAL;
+        
+        if (!isCircleCell) {
             this.nodeCircleBorder.active = false;
             return;
         }
 
-        // Find base for color
-        const base = gameBoardData.bases.find(b => b.ID === this.cellData.baseID);
+        const base = gameDataService.getBase(this.cellData.baseID);
         const baseColor = base ? base.color : null;
+        const color = baseColor ? getBaseColor(baseColor) : null;
 
-        if (!baseColor || !BASE_COLORS[baseColor]) {
-            console.log(`[CellComponent] updateCircleBorder - No base color found, hiding circle`);
+        if (!color) {
             this.nodeCircleBorder.active = false;
             return;
         }
 
-        console.log(`[CellComponent] updateCircleBorder - Drawing circle for ${this.cellData.cellType} cell with color ${baseColor}`);
+        this.setupCircleGraphics(color);
+    }
 
-        // Get or create Graphics component
+    /**
+     * Setup and draw circle graphics
+     */
+    private setupCircleGraphics(color: Color): void {
+        if (!this.nodeCircleBorder) return;
+
         this.circleGraphics = this.nodeCircleBorder.getComponent(Graphics);
         if (!this.circleGraphics) {
-            console.log(`[CellComponent] updateCircleBorder - Adding Graphics component`);
             try {
                 this.circleGraphics = this.nodeCircleBorder.addComponent(Graphics);
             } catch (error) {
-                console.warn(`[CellComponent] updateCircleBorder - Graphics component not available: ${error}`);
+                Logger.warn("CellComponent", `Graphics component not available: ${error}`);
                 this.nodeCircleBorder.active = false;
                 return;
             }
         }
 
-        // Set up transform
         const transform = this.nodeCircleBorder.getComponent(UITransform);
         if (!transform) {
             const uiTransform = this.nodeCircleBorder.addComponent(UITransform);
             uiTransform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
             uiTransform.setAnchorPoint(0.5, 0.5);
-            console.log(`[CellComponent] updateCircleBorder - Added UITransform: ${CELL_DIMENSION}x${CELL_DIMENSION}`);
         }
 
-        // Draw circle border
-        const hexColor = BASE_COLORS[baseColor];
-        const color = this.hexToColor(hexColor);
-        const radius = CELL_DIMENSION * 0.4; // 40% of cell size
-
-        console.log(`[CellComponent] updateCircleBorder - Drawing circle with radius ${radius}, color: ${hexColor}`);
-
+        const radius = CELL_DIMENSION * 0.4;
         this.circleGraphics.clear();
         this.circleGraphics.strokeColor = color;
         this.circleGraphics.lineWidth = 2;
@@ -516,7 +390,6 @@ export class CellComponent extends Component {
         this.circleGraphics.stroke();
 
         this.nodeCircleBorder.active = true;
-        console.log(`[CellComponent] updateCircleBorder - Circle border updated`);
     }
 
     /**
@@ -532,8 +405,8 @@ export class CellComponent extends Component {
             return;
         }
 
-        // Get next link cell IDs
-        const links = gameBoardData.links[this.cellData.cellID] || [];
+        // Get next link cell IDs using service
+        const links = gameDataService.getLinksForCell(this.cellData.cellID);
         const nextLinkCellIDs = links.map(link => link.cellID);
 
         const debugLines = [
@@ -619,10 +492,7 @@ export class CellComponent extends Component {
 
         if (this.isHighlighted) {
             // Apply highlight effect (brighter color with glow)
-            const highlightColor = this.originalColor.clone();
-            highlightColor.r = Math.min(255, highlightColor.r + 50);
-            highlightColor.g = Math.min(255, highlightColor.g + 50);
-            highlightColor.b = Math.min(255, highlightColor.b + 50);
+            const highlightColor = brightenColor(this.originalColor, 50);
             this.backgroundSprite.color = highlightColor;
 
             // Enable button interaction
@@ -647,52 +517,56 @@ export class CellComponent extends Component {
      * Handle cell click event (for placing bets)
      */
     private onCellClick(event: EventTouch) {
-        console.log(`[CellComponent] onCellClick - Cell ${this.cellID} clicked`);
-
-        // Only allow clicks on highlighted cells
         if (!this.isHighlighted) {
-            console.log(`[CellComponent] onCellClick - Cell not highlighted, ignoring click`);
             return;
         }
 
-        // Get click position relative to cell
         const uiTransform = this.node.getComponent(UITransform);
         if (!uiTransform) {
             return;
         }
 
-        // Get UI location (screen coordinates)
+        const position = this.calculateClickPosition(event, uiTransform);
+        if (!position) {
+            return;
+        }
+
+        this.addBetHorse(position.x, position.y);
+        this.updateBetHorses();
+    }
+
+    /**
+     * Calculate click position relative to cell
+     */
+    private calculateClickPosition(event: EventTouch, uiTransform: UITransform): { x: number; y: number } | null {
         const uiLocation = event.getUILocation();
         const worldPos = new Vec3(uiLocation.x, uiLocation.y, 0);
         
-        // Convert to local node space
         const localPos = new Vec3();
-        this.node.getComponent(UITransform).convertToNodeSpaceAR(worldPos, localPos);
+        uiTransform.convertToNodeSpaceAR(worldPos, localPos);
         
         const cellSize = uiTransform.contentSize;
         
-        // Convert to percentage (10% to 90% to avoid edges)
-        // Local position is relative to anchor point (0.5, 0.5), so add 0.5 to get 0-1 range
+        // Convert to percentage (clamped to avoid edges)
         const x = ((localPos.x / cellSize.width) + 0.5) * 100;
         const y = ((localPos.y / cellSize.height) + 0.5) * 100;
         
-        // Clamp to 10-90% range
-        const clampedX = Math.max(10, Math.min(90, x));
-        const clampedY = Math.max(10, Math.min(90, y));
-
-        // Create a new bet horse
-        const horseId = this.nextBetHorseId++;
-        const newHorse: IBetHorse = {
-            id: horseId,
-            x: clampedX,
-            y: clampedY,
+        return {
+            x: Math.max(CELL_CONFIG.BET_HORSE_MIN_POSITION, Math.min(CELL_CONFIG.BET_HORSE_MAX_POSITION, x)),
+            y: Math.max(CELL_CONFIG.BET_HORSE_MIN_POSITION, Math.min(CELL_CONFIG.BET_HORSE_MAX_POSITION, y))
         };
+    }
 
-        this.betHorses.push(newHorse);
-        console.log(`[CellComponent] onCellClick - Added bet horse ${horseId} at (${clampedX}%, ${clampedY}%)`);
-
-        // Update bet horses display
-        this.updateBetHorses();
+    /**
+     * Add a bet horse at the specified position
+     */
+    private addBetHorse(x: number, y: number): void {
+        const horseId = this.nextBetHorseId++;
+        this.betHorses.push({
+            id: horseId,
+            x: x,
+            y: y,
+        });
     }
 
     /**
@@ -708,58 +582,50 @@ export class CellComponent extends Component {
 
         // Create nodes for each bet horse
         this.betHorses.forEach(horse => {
-            const horseNode = new Node(`BetHorse_${horse.id}`);
-            const transform = horseNode.addComponent(UITransform);
-            const iconSize = CELL_DIMENSION * 0.3; // 30% of cell size
-            transform.setContentSize(iconSize, iconSize);
-            transform.setAnchorPoint(0.5, 0.5);
-
-            // Position based on percentage
-            const cellTransform = this.node.getComponent(UITransform);
-            if (cellTransform) {
-                const cellSize = cellTransform.contentSize;
-                const x = (horse.x / 100 - 0.5) * cellSize.width;
-                const y = (horse.y / 100 - 0.5) * cellSize.height;
-                horseNode.setPosition(x, y, 0);
-            }
-
-            // Add label for dollar sign
-            const label = horseNode.addComponent(Label);
-            label.string = "$";
-            label.fontSize = iconSize * 0.6;
-            label.color = new Color(255, 215, 0, 255); // Gold color
-
+            const horseNode = this.createBetHorseNode(horse);
             this.nodeBetHorsesContainer.addChild(horseNode);
         });
+    }
 
-        console.log(`[CellComponent] updateBetHorses - Displaying ${this.betHorses.length} bet horses`);
+    /**
+     * Create a bet horse node
+     */
+    private createBetHorseNode(horse: IBetHorse): Node {
+        const horseNode = new Node(`BetHorse_${horse.id}`);
+        const transform = horseNode.addComponent(UITransform);
+        const iconSize = CELL_CONFIG.getBetHorseIconSize();
+        
+        transform.setContentSize(iconSize, iconSize);
+        transform.setAnchorPoint(0.5, 0.5);
+
+        // Position based on percentage
+        const cellTransform = this.node.getComponent(UITransform);
+        if (cellTransform) {
+            const cellSize = cellTransform.contentSize;
+            const x = (horse.x / 100 - 0.5) * cellSize.width;
+            const y = (horse.y / 100 - 0.5) * cellSize.height;
+            horseNode.setPosition(x, y, 0);
+        }
+
+        // Add label for dollar sign
+        const label = horseNode.addComponent(Label);
+        label.string = "$";
+        label.fontSize = iconSize * CELL_CONFIG.BET_HORSE_LABEL_SIZE_RATIO;
+        label.color = CELL_CONFIG.BET_HORSE_COLOR;
+
+        return horseNode;
     }
 
     /**
      * Clear all bet horses
      */
     private clearBetHorses() {
-        console.log(`[CellComponent] clearBetHorses - Clearing ${this.betHorses.length} bet horses`);
         this.betHorses = [];
         if (this.nodeBetHorsesContainer) {
             this.nodeBetHorsesContainer.removeAllChildren();
         }
     }
 
-    /**
-     * Convert hex color string to Color object
-     */
-    private hexToColor(hex: string): Color {
-        // Remove # if present
-        hex = hex.replace('#', '');
-        
-        // Parse RGB
-        const r = parseInt(hex.substring(0, 2), 16);
-        const g = parseInt(hex.substring(2, 4), 16);
-        const b = parseInt(hex.substring(4, 6), 16);
-        
-        return new Color(r, g, b, 255);
-    }
 
     /**
      * Set highlighted state

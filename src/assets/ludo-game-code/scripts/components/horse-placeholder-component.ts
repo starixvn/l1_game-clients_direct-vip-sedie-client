@@ -7,14 +7,14 @@
  * Data is read from game-board-data.ts
  */
 
-import { _decorator, Component, Node, UITransform, instantiate, Prefab, Sprite, Color } from "cc";
+import { _decorator, Component, Node, UITransform, instantiate, Prefab, Sprite } from "cc";
 import { BaseColor } from "../game-board-data";
 import { 
     CELL_DIMENSION,
-    HORSE_PLACEHOLDER_SIZE,
-    BASE_COLORS 
+    HORSE_PLACEHOLDER_SIZE
 } from "../global-constants";
 import { HorseComponent } from "./horse-component";
+import { getBaseColor } from "../utils/color-utils";
 
 const { ccclass, property } = _decorator;
 
@@ -159,27 +159,11 @@ export class HorsePlaceholderComponent extends Component {
             horseSprite = this.nodeHorse.addComponent(Sprite);
         }
 
-        // Convert base color to Color object
-        const colorHex = BASE_COLORS[this.baseColor];
-        if (colorHex) {
-            const color = this.hexToColor(colorHex);
+        // Get color from utility
+        const color = getBaseColor(this.baseColor);
+        if (color) {
             horseSprite.color = color;
         }
-    }
-
-    /**
-     * Convert hex color string to Color object
-     */
-    private hexToColor(hex: string): Color {
-        // Remove # if present
-        hex = hex.replace('#', '');
-        
-        // Parse RGB
-        const r = parseInt(hex.substring(0, 2), 16);
-        const g = parseInt(hex.substring(2, 4), 16);
-        const b = parseInt(hex.substring(4, 6), 16);
-        
-        return new Color(r, g, b, 255);
     }
 
     /**

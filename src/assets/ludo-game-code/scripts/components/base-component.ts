@@ -9,9 +9,11 @@
  */
 
 import { _decorator, Component, Node, Sprite, Color, Label, UITransform, instantiate, Prefab, resources } from "cc";
-import { gameBoardData, Base, Horse, BaseColor } from "../game-board-data";
+import { Base, Horse, BaseColor } from "../game-board-data";
 import { WALKWAY_ROW_COUNT, CELL_DIMENSION } from "../global-constants";
 import { HorsePlaceholderComponent } from "./horse-placeholder-component";
+import { gameDataService } from "../services/game-data-service";
+import { getBaseColor } from "../utils/color-utils";
 
 const { ccclass, property } = _decorator;
 
@@ -89,13 +91,6 @@ export class BaseComponent extends Component {
     /** Path to horse placeholder prefab resource */
     private readonly HORSE_PLACEHOLDER_PREFAB_PATH = "ludo-game-code/prefabs/horse-placeholder-prefab";
 
-    /** Color mapping for bases */
-    private readonly colorMap: Record<BaseColor, Color> = {
-        "YELLOW": new Color(255, 255, 0, 255),
-        "GREEN": new Color(0, 255, 0, 255),
-        "BLUE": new Color(0, 0, 255, 255),
-        "RED": new Color(255, 0, 0, 255),
-    };
 
     onLoad() {
         this.initializeBase();
@@ -110,20 +105,19 @@ export class BaseComponent extends Component {
             return;
         }
 
-        // Find base data
-        this.baseData = gameBoardData.bases.find(base => base.ID === this.baseID) || null;
+        // Find base data using service
+        this.baseData = gameDataService.getBase(this.baseID);
         
         if (!this.baseData) {
             console.warn(`BaseComponent: Base data not found for ${this.baseID}`);
             return;
         }
 
-        // Build horses map
-        gameBoardData.horses.forEach(horse => {
-            if (horse.baseID === this.baseID) {
-                this.horsesMap.set(horse.horseID, horse);
-                console.log(`BaseComponent: Added horse ${horse.horseID} to base ${this.baseID}`);
-            }
+        // Build horses map using service
+        const horses = gameDataService.getHorsesForBase(this.baseID);
+        horses.forEach(horse => {
+            this.horsesMap.set(horse.horseID, horse);
+            console.log(`BaseComponent: Added horse ${horse.horseID} to base ${this.baseID}`);
         });
 
         // Get sprite component for outer container
@@ -185,7 +179,7 @@ export class BaseComponent extends Component {
             return;
         }
 
-        const color = this.colorMap[this.baseData.color];
+        const color = getBaseColor(this.baseData.color);
         if (color) {
             this.outerSprite.color = color;
         }
@@ -498,16 +492,15 @@ export class BaseComponent extends Component {
     }
 
     /**
-     * Refresh horse data from gameBoardData
+     * Refresh horse data from game data service
      * Call this when horse states change
      */
     public refreshHorseData() {
-        // Rebuild horses map
+        // Rebuild horses map using service
         this.horsesMap.clear();
-        gameBoardData.horses.forEach(horse => {
-            if (horse.baseID === this.baseID) {
-                this.horsesMap.set(horse.horseID, horse);
-            }
+        const horses = gameDataService.getHorsesForBase(this.baseID);
+        horses.forEach(horse => {
+            this.horsesMap.set(horse.horseID, horse);
         });
 
         // Update visual state
