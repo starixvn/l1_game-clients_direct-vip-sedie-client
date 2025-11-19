@@ -38,7 +38,7 @@ const NODE_NAME_CIRCLE = "circle";
 const NODE_NAME_LABEL = "Label";
 
 // Prefab resource paths
-const CELL_PREFAB_PATH = "game/prefabs/cell";          // Path to cell prefab resource
+const CELL_PREFAB_PATH = "ludo-game-code/prefabs/cell-prefab";          // Path to cell prefab resource
 
 // UI constants
 const ANCHOR_POINT_CENTER = 0.5;                       // Center anchor point (0.5, 0.5)

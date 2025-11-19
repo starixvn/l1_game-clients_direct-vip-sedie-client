@@ -87,7 +87,7 @@ export class BaseComponent extends Component {
     private horsePlaceholdersMap: Map<string, HorsePlaceholderComponent> = new Map();
 
     /** Path to horse placeholder prefab resource */
-    private readonly HORSE_PLACEHOLDER_PREFAB_PATH = "game/prefabs/horse-placeholder";
+    private readonly HORSE_PLACEHOLDER_PREFAB_PATH = "ludo-game-code/prefabs/horse-placeholder-prefab";
 
     /** Color mapping for bases */
     private readonly colorMap: Record<BaseColor, Color> = {

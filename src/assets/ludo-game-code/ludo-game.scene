@@ -340,7 +340,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "horse-placeholder",
+    "_name": "horse-placeholder-container",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -710,7 +710,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "horse-placeholder-001",
+    "_name": "horse-placeholder-container",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -1330,7 +1330,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "horse-placeholder-001",
+    "_name": "horse-placeholder-container",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -1700,7 +1700,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "horse-placeholder-002",
+    "_name": "horse-placeholder-container",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
