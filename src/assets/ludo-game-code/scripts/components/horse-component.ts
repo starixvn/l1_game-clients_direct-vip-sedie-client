@@ -5,7 +5,7 @@
  * Horses are the pieces that players move around the board.
  * Each horse belongs to a specific player (represented by baseColor).
  * 
- * This component renders the horse icon (Unicode chess knight) and horse number.
+ * This component renders the horse icon (Unicode chess knight).
  * For horses in the base, use HorsePlaceholderComponent which wraps this component.
  * 
  * Data is read from game-board-data.ts
@@ -38,7 +38,7 @@ export interface IHorseComponentProps {
     isFlyingToBase?: boolean;
     /** Whether the horse is being hovered (for action selection highlighting) */
     isHovered?: boolean;
-    /** Optional horse ID to extract and display the horse number */
+    /** Optional horse ID */
     horseID?: string;
 }
 
@@ -64,24 +64,16 @@ export class HorseComponent extends Component {
     @property({ type: Boolean, tooltip: "Whether the horse is hovered" })
     isHovered: boolean = false;
 
-    /** Optional horse ID to extract and display the horse number */
+    /** Optional horse ID */
     @property({ type: String, tooltip: "Horse ID (e.g., BASE_1_HORSE_1)" })
     horseID: string = "";
-
 
     /** Node for the horse icon (Unicode character) */
     @property({ type: Node, tooltip: "Horse icon label node" })
     nodeHorseIcon: Node = null;
 
-    /** Node for the horse number label */
-    @property({ type: Node, tooltip: "Horse number label node" })
-    nodeHorseNumber: Node = null;
-
     /** Horse icon label component */
     private horseIconLabel: Label = null;
-
-    /** Horse number label component */
-    private horseNumberLabel: Label = null;
 
     /** Whether auto-movement is enabled */
     private isAutoMoving: boolean = false;
@@ -173,56 +165,6 @@ export class HorseComponent extends Component {
         // Set up click event handler
         iconButton.node.on(Button.EventType.CLICK, this.onHorseIconClick, this);
 
-        // Create or get horse number label
-        const horseNumber = this.extractHorseNumber(this.horseID);
-        if (horseNumber) {
-            if (!this.nodeHorseNumber) {
-                // First try to find existing node by name (from prefab or previous initialization)
-                this.nodeHorseNumber = this.node.getChildByName("HorseNumber");
-                if (!this.nodeHorseNumber) {
-                    // Only create if it doesn't exist to avoid duplicates
-                    this.nodeHorseNumber = new Node("HorseNumber");
-                    this.node.addChild(this.nodeHorseNumber);
-                    
-                    const numberTransform = this.nodeHorseNumber.addComponent(UITransform);
-                    numberTransform.setContentSize(this.horseSize * 0.3, this.horseSize * 0.3);
-                    numberTransform.setAnchorPoint(0.5, 0.5);
-                    // Position at bottom-right of horse icon
-                    this.nodeHorseNumber.setPosition(
-                        this.horseSize * 0.25, 
-                        -this.horseSize * 0.25, 
-                        0
-                    );
-                }
-            } else {
-                // If nodeHorseNumber is already assigned, verify it's still a child
-                if (this.nodeHorseNumber.parent !== this.node) {
-                    // Re-find or recreate if parent changed
-                    const existingNode = this.node.getChildByName("HorseNumber");
-                    if (existingNode) {
-                        this.nodeHorseNumber = existingNode;
-                    } else {
-                        // Node was lost, need to recreate
-                        this.nodeHorseNumber = new Node("HorseNumber");
-                        this.node.addChild(this.nodeHorseNumber);
-                        const numberTransform = this.nodeHorseNumber.addComponent(UITransform);
-                        numberTransform.setContentSize(this.horseSize * 0.3, this.horseSize * 0.3);
-                        numberTransform.setAnchorPoint(0.5, 0.5);
-                        this.nodeHorseNumber.setPosition(
-                            this.horseSize * 0.25, 
-                            -this.horseSize * 0.25, 
-                            0
-                        );
-                    }
-                }
-            }
-
-            this.horseNumberLabel = this.nodeHorseNumber.getComponent(Label);
-            if (!this.horseNumberLabel) {
-                this.horseNumberLabel = this.nodeHorseNumber.addComponent(Label);
-            }
-        }
-
         // Update visual state
         this.updateVisualState();
     }
@@ -244,9 +186,6 @@ export class HorseComponent extends Component {
     public updateVisualState() {
         // Update horse icon
         this.updateHorseIcon();
-
-        // Update horse number
-        this.updateHorseNumber();
 
         // Update animations
         this.updateAnimations();
@@ -292,32 +231,6 @@ export class HorseComponent extends Component {
             this.horseIconLabel.overflow = Label.Overflow.SHRINK;
             (this.horseIconLabel as any)._isSystemFontUsed = true;
             (this.horseIconLabel as any)._font = null;
-        }
-    }
-
-    /**
-     * Update the horse number display
-     */
-    private updateHorseNumber() {
-        if (!this.horseNumberLabel) {
-            return;
-        }
-
-        const horseNumber = this.extractHorseNumber(this.horseID);
-        if (horseNumber) {
-            this.horseNumberLabel.string = horseNumber;
-            this.horseNumberLabel.fontSize = Math.floor(this.horseSize * 0.2);
-            this.horseNumberLabel.fontFamily = "Arial";
-            this.horseNumberLabel.color = new Color(255, 255, 255, 255);
-            this.horseNumberLabel.enableOutline = true;
-            this.horseNumberLabel.outlineColor = new Color(0, 0, 0, 255);
-            this.horseNumberLabel.outlineWidth = 1;
-            this.horseNumberLabel.horizontalAlign = Label.HorizontalAlign.CENTER;
-            this.horseNumberLabel.verticalAlign = Label.VerticalAlign.CENTER;
-            (this.horseNumberLabel as any)._isSystemFontUsed = true;
-            (this.horseNumberLabel as any)._font = null;
-        } else {
-            this.horseNumberLabel.string = "";
         }
     }
 

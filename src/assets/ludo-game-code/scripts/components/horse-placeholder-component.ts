@@ -7,7 +7,7 @@
  * Data is read from game-board-data.ts
  */
 
-import { _decorator, Component, Node, UITransform, instantiate, Prefab, Sprite } from "cc";
+import { _decorator, Component, Node, UITransform, Sprite } from "cc";
 import { BaseColor } from "../game-board-data";
 import { 
     CELL_DIMENSION,
@@ -50,17 +50,8 @@ export class HorsePlaceholderComponent extends Component {
     @property({ type: String, tooltip: "Horse ID (e.g., BASE_1_HORSE_1)" })
     horseID: string = "";
 
-    /** Horse prefab (optional, will create programmatically if not provided) */
-    @property({ type: Prefab, tooltip: "Horse prefab (optional)" })
-    horsePrefab: Prefab = null;
-
-    /** Container node for centering */
-    @property({ type: Node, tooltip: "Container node (if null, uses this node)" })
-    containerNode: Node = null;
-
-    /** Horse node (child containing HorseComponent) */
-    @property({ type: Node, tooltip: "Horse node (child with HorseComponent)" })
-    nodeHorse: Node = null;
+    /** Horse node (child containing HorseComponent) - found dynamically */
+    private nodeHorse: Node = null;
 
     /** Horse component reference */
     private horseComponent: HorseComponent = null;
@@ -81,7 +72,7 @@ export class HorsePlaceholderComponent extends Component {
      */
     private initializePlaceholder() {
         // Use container node or this node
-        const container = this.containerNode || this.node;
+        const container = this.node;
 
         // Set up container size
         const containerTransform = container.getComponent(UITransform);
@@ -94,27 +85,17 @@ export class HorsePlaceholderComponent extends Component {
             containerTransform.setAnchorPoint(0.5, 0.5);
         }
 
-        // Find horse node from prefab children or create from horse prefab
+        // Find or create horse node
+        this.nodeHorse = container.getChildByName("Horse");
+        
         if (!this.nodeHorse) {
-            // First try to find existing horse node in prefab
-            this.nodeHorse = container.getChildByName("Horse");
-            
-            if (!this.nodeHorse) {
-                // If not found and horse prefab is provided, instantiate it
-                if (this.horsePrefab) {
-                    this.nodeHorse = instantiate(this.horsePrefab);
-                    container.addChild(this.nodeHorse);
-                    this.nodeHorse.setPosition(0, 0, 0);
-                } else {
-                    console.warn(`HorsePlaceholderComponent: Horse node not found in prefab and no horsePrefab provided, creating fallback`);
-                    this.nodeHorse = new Node("Horse");
-                    const horseComponent = this.nodeHorse.addComponent(HorseComponent);
-                    horseComponent.baseColor = this.baseColor;
-                    horseComponent.horseSize = this.horseSize;
-                    container.addChild(this.nodeHorse);
-                    this.nodeHorse.setPosition(0, 0, 0);
-                }
-            }
+            // Create horse node if not found
+            this.nodeHorse = new Node("Horse");
+            const horseComponent = this.nodeHorse.addComponent(HorseComponent);
+            horseComponent.baseColor = this.baseColor;
+            horseComponent.horseSize = this.horseSize;
+            container.addChild(this.nodeHorse);
+            this.nodeHorse.setPosition(0, 0, 0);
         }
 
         // Get horse component

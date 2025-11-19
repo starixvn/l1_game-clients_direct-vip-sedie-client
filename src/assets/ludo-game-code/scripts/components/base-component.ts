@@ -29,9 +29,6 @@ export interface IBaseComponentProps {
     
     /** Whether the player of this base has won the game */
     hasWon?: boolean;
-    
-    /** Whether to show debug text (base ID, color, etc.) */
-    showDebugText?: boolean;
 }
 
 @ccclass("BaseComponent")
@@ -43,10 +40,6 @@ export class BaseComponent extends Component {
     /** Whether the player of this base has won the game */
     @property({ type: Boolean, tooltip: "Whether the player has won" })
     hasWon: boolean = false;
-
-    /** Whether to show debug text */
-    @property({ type: Boolean, tooltip: "Show debug information" })
-    showDebugText: boolean = true;
 
     /** Whether the base is spawnable (player rolled a 6) */
     @property({ type: Boolean, tooltip: "Whether base is spawnable (rolled 6)" })
@@ -71,10 +64,6 @@ export class BaseComponent extends Component {
     /** Container node for horse placeholders (if null, uses nodeInnerContainer or this.node) */
     @property({ type: Node, tooltip: "Container node for horse placeholders (if null, uses nodeInnerContainer)" })
     horsePlaceholdersContainer: Node = null;
-
-    /** Debug info label (optional) */
-    @property({ type: Node, tooltip: "Debug info label node (optional)" })
-    nodeDebugInfo: Node = null;
 
     /** Sprite component for the outer container (for color) */
     private outerSprite: Sprite = null;
@@ -164,11 +153,6 @@ export class BaseComponent extends Component {
 
         // Update horse placeholders
         this.updateHorsePlaceholders();
-
-        // Update debug info
-        if (this.showDebugText) {
-            this.updateDebugInfo();
-        }
     }
 
     /**
@@ -345,61 +329,6 @@ export class BaseComponent extends Component {
             
             console.log(`BaseComponent: Updated placeholder for ${horseID}: hidden=${isHorseHidden}, baseColor=${this.baseData.color}`);
         });
-    }
-
-    /**
-     * Update debug information display
-     */
-    private updateDebugInfo() {
-        if (!this.nodeDebugInfo || !this.baseData) {
-            return;
-        }
-
-        const label = this.nodeDebugInfo.getComponent(Label);
-        if (!label) {
-            return;
-        }
-
-        const horsesInBase = this.baseData.horseIDs.filter(
-            horseID => {
-                const horse = this.horsesMap.get(horseID);
-                return horse && !horse.isSpawned && !horse.isRetired;
-            }
-        ).length;
-
-        const horsesSpawned = this.baseData.horseIDs.filter(
-            horseID => {
-                const horse = this.horsesMap.get(horseID);
-                return horse && horse.isSpawned && !horse.isRetired;
-            }
-        ).length;
-
-        const horsesHome = this.baseData.horseIDs.filter(
-            horseID => {
-                const horse = this.horsesMap.get(horseID);
-                return horse && horse.isRetired;
-            }
-        ).length;
-
-        let status = "";
-        if (!this.isBaseEnabled) {
-            status = "DISABLED";
-        } else if (this.hasWon) {
-            status = "WINNER!";
-        } else if (this.spawnable) {
-            status = "SPAWN READY";
-        }
-
-        const debugText = [
-            this.baseID.replace("_", " "),
-            this.baseData.color,
-            status,
-            `In Base: ${horsesInBase}`,
-            `On Board: ${horsesSpawned}`,
-            `Home: ${horsesHome}`
-        ].filter(Boolean).join("\n");
-
-        label.string = debugText;
     }
 
     /**
