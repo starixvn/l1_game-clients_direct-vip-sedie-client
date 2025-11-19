@@ -888,12 +888,33 @@ export class HorseComponent extends Component {
             console.log(`[HorseComponent] moveHorseToPosition - Moved HorseIcon to end of parent's children (index: ${parent.children.length - 1})`);
         }
 
-        // Animate movement with tween - move only the HorseIcon node
+        // Animate movement with tween - move only the HorseIcon node with jumping motion
+        const startPos = new Vec3();
+        this.nodeHorseIcon.getPosition(startPos);
+        
+        // Calculate jump height (proportional to distance traveled)
+        const distance = Vec3.distance(startPos, localTargetPos);
+        const jumpHeight = Math.min(distance * 0.3, 50); // Jump height, capped at 50 pixels
+        
+        // Create jumping animation: move horizontally while jumping vertically
+        const midPoint = new Vec3();
+        Vec3.lerp(midPoint, startPos, localTargetPos, 0.5);
+        midPoint.y += jumpHeight; // Peak of the jump
+        
+        // Animation duration based on distance
+        const duration = Math.max(0.3, Math.min(0.6, distance / 200));
+        
+        // Jump animation: move to midpoint (peak), then to target
         this.animationTween = tween(this.nodeHorseIcon)
-            .to(0.5, { 
+            .to(duration / 2, { 
+                position: midPoint 
+            }, { 
+                easing: 'sineOut' // Accelerate upward
+            })
+            .to(duration / 2, { 
                 position: localTargetPos 
             }, { 
-                easing: 'sineInOut' 
+                easing: 'sineIn' // Decelerate downward
             })
             .call(() => {
                 console.log(`[HorseComponent] moveHorseToPosition - HorseIcon movement completed`);
