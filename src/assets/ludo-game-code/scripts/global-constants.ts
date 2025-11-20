@@ -32,9 +32,15 @@ export const HORSE_PLACEHOLDER_DIMENSION = 1;                 // Horse placehold
 
 // Pixel dimensions
 export const CELL_DIMENSION = 50;                             // Pixels per cell
-export const CELL_DIMENSION_MULTIPLIER = 3;                   // Multiplier for double-sized cells (used for HOME walkway and special cells)
+export const CELL_DIMENSION_MULTIPLIER = 2;                   // Multiplier for double-sized cells (used for HOME walkway and special cells)
 export const BOARD_SIZE = 15;                                 // Cells (increased to accommodate 7 columns in both WEST and EAST walkways)
-export const BOARD_DIMENSION = CELL_DIMENSION * BOARD_SIZE;   // Pixels (675px × 675px)
+export const BOARD_DIMENSION = ((WALKWAY_ROW_COUNT * 2) + CELL_DIMENSION_MULTIPLIER) * CELL_DIMENSION;
+
+// Cell position adjustment constants
+export const CELL_POSITION_Y_OFFSET_MULTIPLIER = 15;           // Multiplier for EAST/WEST walkway Y offset calculations
+export const CELL_POSITION_NORTH_SOUTH_X_MULTIPLIER = 5;      // Multiplier for NORTH/SOUTH walkway X offset calculations
+export const CELL_POSITION_NORTH_SOUTH_Y_MULTIPLIER = 10;     // Multiplier for NORTH/SOUTH walkway Y offset calculations
+export const CELL_POSITION_ROW_COLUMN_MAX = 6;                // Maximum row/column index used in position calculations
 
 // Size constants mapped to base constants (for backward compatibility and semantic clarity)
 export const CELL_SIZE = UNIT_SIZE;                           // Size of a single cell (1)

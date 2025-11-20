@@ -11,7 +11,11 @@ import { _decorator, Component, Node, Sprite, Color, Label, UITransform, Button,
 import { Cell, CellType, Position, BaseColor, GAME_CONSTANTS } from "../game-board-data";
 import { 
     CELL_DIMENSION,
-    WALKWAY_LENGTH
+    WALKWAY_LENGTH,
+    CELL_POSITION_Y_OFFSET_MULTIPLIER,
+    CELL_POSITION_NORTH_SOUTH_X_MULTIPLIER,
+    CELL_POSITION_NORTH_SOUTH_Y_MULTIPLIER,
+    CELL_POSITION_ROW_COLUMN_MAX
 } from "../global-constants";
 import { gameDataService } from "../services/game-data-service";
 import { getBaseColor } from "../utils/color-utils";
@@ -146,7 +150,6 @@ export class CellComponent extends Component {
         const position = this.cellData.position;
         const column = this.cellData.column;
         const row = this.cellData.row;
-        const yOffsetMultiplier = 15;
         
         let yOffset = 0;
         let xOffset = 0;
@@ -154,28 +157,31 @@ export class CellComponent extends Component {
         let adjustCellNode = false;
         
         // EAST walkway: columns 1-6, add value (column * multiplier) to child nodes only (Y axis)
-        if (position === "EAST" && column >= 1 && column <= 6) {
-            yOffset = column * yOffsetMultiplier;
+        if (position === "EAST" && column >= 1 && column <= CELL_POSITION_ROW_COLUMN_MAX) {
+            yOffset = column * CELL_POSITION_Y_OFFSET_MULTIPLIER;
             shouldAdjust = true;
         }
-        // WEST walkway: columns 0-6, subtract value ((6 - column) * multiplier) from child nodes only (Y axis)
-        else if (position === "WEST" && column >= 0 && column <= 6) {
-            yOffset = -(6 - column) * yOffsetMultiplier;
+        // WEST walkway: columns 0-6, subtract value ((CELL_POSITION_ROW_COLUMN_MAX - column) * multiplier) from child nodes only (Y axis)
+        else if (position === "WEST" && column >= 0 && column <= CELL_POSITION_ROW_COLUMN_MAX) {
+            yOffset = -(CELL_POSITION_ROW_COLUMN_MAX - column) * 10;
+            xOffset = -(CELL_POSITION_ROW_COLUMN_MAX - column - 1) * 5;
             shouldAdjust = true;
         }
         // NORTH walkway: all columns, adjust both X and Y based on row index (child nodes only)
-        // X = x - (6 - row) * 5, Y = y - (6 - row) * 10
+        // X = x - (CELL_POSITION_ROW_COLUMN_MAX - row) * CELL_POSITION_NORTH_SOUTH_X_MULTIPLIER
+        // Y = y - (CELL_POSITION_ROW_COLUMN_MAX - row) * CELL_POSITION_NORTH_SOUTH_Y_MULTIPLIER
         else if (position === "NORTH") {
-            xOffset = -(6 - row) * 5;
-            yOffset = -(6 - row) * 10;
+            xOffset = 5 + (10 * column);
+            yOffset = -(CELL_POSITION_ROW_COLUMN_MAX - row) * 5 + (column * 10);
             shouldAdjust = true;
             adjustCellNode = false;
         }
         // SOUTH walkway: all columns, adjust both X and Y based on row index (child nodes only)
-        // X = current x + (row index * 5), Y = current y + (row index * 10)
+        // X = current x + (row index * CELL_POSITION_NORTH_SOUTH_X_MULTIPLIER)
+        // Y = current y + (row index * CELL_POSITION_NORTH_SOUTH_Y_MULTIPLIER)
         else if (position === "SOUTH") {
-            xOffset = row * 5;
-            yOffset = row * 10;
+            xOffset = row * CELL_POSITION_NORTH_SOUTH_X_MULTIPLIER;
+            yOffset = row * CELL_POSITION_NORTH_SOUTH_Y_MULTIPLIER;
             shouldAdjust = true;
             adjustCellNode = false;
         }
