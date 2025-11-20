@@ -32,6 +32,7 @@ export const HORSE_PLACEHOLDER_DIMENSION = 1;                 // Horse placehold
 
 // Pixel dimensions
 export const CELL_DIMENSION = 50;                             // Pixels per cell
+export const CELL_DIMENSION_MULTIPLIER = 3;                   // Multiplier for double-sized cells (used for HOME walkway and special cells)
 export const BOARD_SIZE = 15;                                 // Cells (increased to accommodate 7 columns in both WEST and EAST walkways)
 export const BOARD_DIMENSION = CELL_DIMENSION * BOARD_SIZE;   // Pixels (675px × 675px)
 

@@ -21,7 +21,8 @@ import {
     WALKWAY_LENGTH, 
     WALKWAY_WIDTH, 
     WALKWAY_VERTICAL_HEIGHT, 
-    CELL_DIMENSION
+    CELL_DIMENSION,
+    CELL_DIMENSION_MULTIPLIER
 } from "../global-constants";
 import { CellComponent } from "./cell-component";
 import { gameDataService } from "../services/game-data-service";
@@ -281,9 +282,30 @@ export class WalkwayComponent extends Component {
      */
     private calculateContainerSize(): { width: number; height: number } {
         if (this.walkwayID === GAME_CONSTANTS.HOME_WALKWAY_ID) {
+            // Calculate container size based on actual cell sizes
+            // HOME walkway cells have width = CELL_DIMENSION_MULTIPLIER * CELL_DIMENSION
+            // Empty cell has width = CELL_DIMENSION_MULTIPLIER * CELL_DIMENSION, height = CELL_DIMENSION_MULTIPLIER * CELL_DIMENSION
+            // Max width = maximum width of any cell
+            // Max height = sum of all cell heights (cells are stacked vertically)
+            let maxWidth = CELL_DIMENSION;
+            let totalHeight = 0;
+            
+            if (this.walkwayCells && this.walkwayCells.length > 0) {
+                this.walkwayCells.forEach(cell => {
+                    const { width, height } = this.calculateCellSize(cell);
+                    maxWidth = Math.max(maxWidth, width);
+                    totalHeight += height;
+                });
+            } else {
+                // Fallback: HOME walkway cells are CELL_DIMENSION_MULTIPLIER * CELL_DIMENSION wide
+                // Height depends on number of cells
+                maxWidth = CELL_DIMENSION * CELL_DIMENSION_MULTIPLIER;
+                totalHeight = GAME_CONSTANTS.HOME_WALKWAY_HEIGHT * CELL_DIMENSION;
+            }
+            
             return {
-                width: GAME_CONSTANTS.HOME_WALKWAY_WIDTH * CELL_DIMENSION,
-                height: GAME_CONSTANTS.HOME_WALKWAY_HEIGHT * CELL_DIMENSION
+                width: maxWidth,
+                height: totalHeight
             };
         }
 
@@ -325,7 +347,31 @@ export class WalkwayComponent extends Component {
         layout.paddingBottom = LAYOUT_PADDING_ZERO;
         layout.spacingX = LAYOUT_PADDING_ZERO;
         layout.spacingY = LAYOUT_PADDING_ZERO;
-        layout.cellSize = new Size(CELL_DIMENSION, CELL_DIMENSION);
+        
+        // Calculate cell size based on walkway type
+        // For HOME walkway, use max cell size, otherwise use standard CELL_DIMENSION
+        if (this.walkwayID === GAME_CONSTANTS.HOME_WALKWAY_ID) {
+            // HOME walkway cells have width = CELL_DIMENSION_MULTIPLIER * CELL_DIMENSION
+            // Use max cell size for grid layout
+            let maxCellWidth = CELL_DIMENSION;
+            let maxCellHeight = CELL_DIMENSION;
+            
+            if (this.walkwayCells && this.walkwayCells.length > 0) {
+                this.walkwayCells.forEach(cell => {
+                    const { width, height } = this.calculateCellSize(cell);
+                    maxCellWidth = Math.max(maxCellWidth, width);
+                    maxCellHeight = Math.max(maxCellHeight, height);
+                });
+            } else {
+                // Fallback: HOME walkway cells are CELL_DIMENSION_MULTIPLIER * CELL_DIMENSION wide
+                maxCellWidth = CELL_DIMENSION * CELL_DIMENSION_MULTIPLIER;
+            }
+            
+            layout.cellSize = new Size(maxCellWidth, maxCellHeight);
+        } else {
+            layout.cellSize = new Size(CELL_DIMENSION, CELL_DIMENSION);
+        }
+        
         layout.enabled = true;
     }
 
@@ -363,6 +409,54 @@ export class WalkwayComponent extends Component {
     }
 
     /**
+     * Calculate cell size based on cell type and position
+     * @param cell Cell data
+     * @returns Object with width and height
+     */
+    private calculateCellSize(cell: Cell): { width: number; height: number } {
+        // Default size
+        let width = CELL_DIMENSION;
+        let height = CELL_DIMENSION;
+
+        // Check for empty cell in HOME walkway
+        if (cell.cellID === GAME_CONSTANTS.HOME_EMPTY_CELL_ID) {
+            // Empty cell: height = CELL_DIMENSION_MULTIPLIER * CELL_DIMENSION
+            height = CELL_DIMENSION * CELL_DIMENSION_MULTIPLIER;
+            width = CELL_DIMENSION * CELL_DIMENSION_MULTIPLIER;
+        }
+        // Check if cell is in HOME walkway (cells with notRenderInWalkway === true)
+        else if (cell.notRenderInWalkway === true) {
+            // HOME walkway cells: width = CELL_DIMENSION_MULTIPLIER * CELL_DIMENSION
+            width = CELL_DIMENSION * CELL_DIMENSION_MULTIPLIER;
+        }
+        // Check for specific cell IDs
+        else if (cell.cellID === "NORTH_0_1" || cell.cellID === "SOUTH_6_1") {
+            // NORTH_0_1 and SOUTH_6_1: width = CELL_DIMENSION_MULTIPLIER * CELL_DIMENSION
+            width = CELL_DIMENSION * CELL_DIMENSION_MULTIPLIER;
+        } else if (cell.cellID === "EAST_1_6" || cell.cellID === "WEST_1_0") {
+            // EAST_1_6 and WEST_1_0: height = CELL_DIMENSION_MULTIPLIER * CELL_DIMENSION
+            height = CELL_DIMENSION * CELL_DIMENSION_MULTIPLIER;
+        }
+        // For HOMEPATH cells, adjust size based on position
+        else if (cell.cellType === GAME_CONSTANTS.CELL_TYPE_HOMEPATH) {
+            const position = cell.position;
+            
+            // NORTH/SOUTH: width = CELL_DIMENSION_MULTIPLIER * CELL_DIMENSION
+            if (position === "NORTH" || position === "SOUTH") {
+                width = CELL_DIMENSION * CELL_DIMENSION_MULTIPLIER;
+                height = CELL_DIMENSION;
+            }
+            // EAST/WEST: height = CELL_DIMENSION_MULTIPLIER * CELL_DIMENSION
+            else if (position === "EAST" || position === "WEST") {
+                width = CELL_DIMENSION;
+                height = CELL_DIMENSION * CELL_DIMENSION_MULTIPLIER;
+            }
+        }
+
+        return { width, height };
+    }
+
+    /**
      * Create a cell node for the given cell data
      */
     private createCellNode(cell: Cell): Node | null {
@@ -383,14 +477,16 @@ export class WalkwayComponent extends Component {
             // Ensure cell node has proper UITransform for grid layout
             let cellTransform = cellNode.getComponent(UITransform);
             if (cellTransform) {
-                // Update size to match CELL_DIMENSION
-                cellTransform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
+                // Calculate size based on cell type and position
+                const { width, height } = this.calculateCellSize(cell);
+                cellTransform.setContentSize(width, height);
                 cellTransform.setAnchorPoint(ANCHOR_POINT_CENTER, ANCHOR_POINT_CENTER);
-                console.log(`[WalkwayComponent] createCellNode - Updated prefab UITransform: ${CELL_DIMENSION}x${CELL_DIMENSION}`);
+                console.log(`[WalkwayComponent] createCellNode - Updated prefab UITransform: ${width}x${height}`);
             } else {
                 console.warn(`[WalkwayComponent] createCellNode - Prefab missing UITransform, adding one`);
                 cellTransform = cellNode.addComponent(UITransform);
-                cellTransform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
+                const { width, height } = this.calculateCellSize(cell);
+                cellTransform.setContentSize(width, height);
                 cellTransform.setAnchorPoint(ANCHOR_POINT_CENTER, ANCHOR_POINT_CENTER);
             }
         } else {
@@ -399,9 +495,10 @@ export class WalkwayComponent extends Component {
             
             // Add UITransform
             const transform = cellNode.addComponent(UITransform);
-            transform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
+            const { width, height } = this.calculateCellSize(cell);
+            transform.setContentSize(width, height);
             transform.setAnchorPoint(ANCHOR_POINT_CENTER, ANCHOR_POINT_CENTER);
-            console.log(`[WalkwayComponent] createCellNode - Added UITransform: ${CELL_DIMENSION}x${CELL_DIMENSION}`);
+            console.log(`[WalkwayComponent] createCellNode - Added UITransform: ${width}x${height}`);
 
             // Add Sprite for visual representation (basic fallback)
             const sprite = cellNode.addComponent(Sprite);
@@ -496,20 +593,24 @@ export class WalkwayComponent extends Component {
      * Create an empty cell node (no color, just placeholder)
      */
     private createEmptyCellNode(): Node {
+        // Create the empty cell data to calculate size
+        const emptyCell = this.createEmptyHomeCell();
+        const { width, height } = this.calculateCellSize(emptyCell);
+        
         let emptyNode: Node;
         
         // Use prefab if available, otherwise create programmatically
         if (this.cellPrefab) {
             emptyNode = instantiate(this.cellPrefab);
             
-            // Ensure proper UITransform
+            // Ensure proper UITransform with calculated size
             let transform = emptyNode.getComponent(UITransform);
             if (transform) {
-                transform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
+                transform.setContentSize(width, height);
                 transform.setAnchorPoint(ANCHOR_POINT_CENTER, ANCHOR_POINT_CENTER);
             } else {
                 transform = emptyNode.addComponent(UITransform);
-                transform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
+                transform.setContentSize(width, height);
                 transform.setAnchorPoint(ANCHOR_POINT_CENTER, ANCHOR_POINT_CENTER);
             }
             
@@ -543,12 +644,12 @@ export class WalkwayComponent extends Component {
             // Create programmatically - just an empty node with UITransform
             emptyNode = new Node("EmptyCell");
             const transform = emptyNode.addComponent(UITransform);
-            transform.setContentSize(CELL_DIMENSION, CELL_DIMENSION);
+            transform.setContentSize(width, height);
             transform.setAnchorPoint(ANCHOR_POINT_CENTER, ANCHOR_POINT_CENTER);
         }
         
         emptyNode.name = `EmptyCell_${GAME_CONSTANTS.HOME_EMPTY_CELL_ID}`;
-        console.log(`[WalkwayComponent] createEmptyCellNode - Empty cell node created: ${CELL_DIMENSION}x${CELL_DIMENSION}`);
+        console.log(`[WalkwayComponent] createEmptyCellNode - Empty cell node created: ${width}x${height}`);
         
         return emptyNode;
     }
