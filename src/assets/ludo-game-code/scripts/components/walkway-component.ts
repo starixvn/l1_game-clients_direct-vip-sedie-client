@@ -89,10 +89,6 @@ export class WalkwayComponent extends Component {
     @property({ type: String, tooltip: "Walkway ID (e.g., WALKWAY_1, WALKWAY_2, WALKWAY_3, WALKWAY_4)" })
     walkwayID: string = "";
 
-    /** Whether to show debug text */
-    @property({ type: Boolean, tooltip: "Show debug information" })
-    showDebugText: boolean = true;
-
     /** Prefab for cell nodes (optional - if not provided, cells will be created programmatically) */
     @property({ type: Prefab, tooltip: "Cell prefab (optional)" })
     cellPrefab: Prefab = null;
@@ -100,10 +96,6 @@ export class WalkwayComponent extends Component {
     /** Container node for cells */
     @property({ type: Node, tooltip: "Container node for cells (if null, uses this node)" })
     cellsContainer: Node = null;
-
-    /** Debug label node (optional) */
-    @property({ type: Node, tooltip: "Debug label node (optional)" })
-    nodeDebugInfo: Node = null;
 
     /** Walkway data from gameBoardData */
     private walkwayData: Walkway | null = null;
@@ -191,10 +183,6 @@ export class WalkwayComponent extends Component {
         this.setupContainer();
         this.setupGridLayout();
         this.buildCells();
-
-        if (this.showDebugText) {
-            this.updateDebugInfo();
-        }
     }
 
     /**
@@ -253,10 +241,6 @@ export class WalkwayComponent extends Component {
         this.setupContainer();
         this.setupGridLayout();
         this.buildCells();
-
-        if (this.showDebugText) {
-            this.updateDebugInfo();
-        }
     }
 
     /**
@@ -445,7 +429,6 @@ export class WalkwayComponent extends Component {
         // Set CellComponent properties and let it handle all UI updates
         if (cellComponent) {
             cellComponent.cellID = cell.cellID;
-            cellComponent.showDebugText = this.showDebugText;
         } else {
             Logger.warn("WalkwayComponent", "Failed to get or create CellComponent");
         }
@@ -604,36 +587,6 @@ export class WalkwayComponent extends Component {
     }
 
     /**
-     * Update debug information display
-     */
-    private updateDebugInfo() {
-        console.log(`[WalkwayComponent] updateDebugInfo - Updating debug info`);
-        
-        if (!this.nodeDebugInfo || !this.walkwayData) {
-            console.log(`[WalkwayComponent] updateDebugInfo - Skipping (nodeDebugInfo: ${!!this.nodeDebugInfo}, walkwayData: ${!!this.walkwayData})`);
-            return;
-        }
-
-        const label = this.nodeDebugInfo.getComponent(Label);
-        if (!label) {
-            console.warn(`[WalkwayComponent] updateDebugInfo - No Label component found on debug info node`);
-            return;
-        }
-
-        const cellCount = this.walkwayCells.length;
-        const debugText = [
-            this.walkwayData.ID.replace("_", " "),
-            `Position: ${this.walkwayData.position}`,
-            `Base: ${this.walkwayData.baseID}`,
-            `Cells: ${cellCount}`,
-            `Orientation: ${this.isHorizontal ? "Horizontal" : "Vertical"}`
-        ].join("\n");
-
-        label.string = debugText;
-        console.log(`[WalkwayComponent] updateDebugInfo - Debug text updated: ${debugText.replace(/\n/g, " | ")}`);
-    }
-
-    /**
      * Get cell node by cell ID
      */
     public getCellNode(cellID: string): Node | undefined {
@@ -779,11 +732,6 @@ export class WalkwayComponent extends Component {
         
         // Rebuild cells
         this.buildCells();
-        
-        // Update debug info
-        if (this.showDebugText) {
-            this.updateDebugInfo();
-        }
         
         console.log(`[WalkwayComponent] refreshWalkway - Refresh complete`);
     }

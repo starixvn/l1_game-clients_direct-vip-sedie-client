@@ -16,6 +16,7 @@ import {
 import { gameDataService } from "../services/game-data-service";
 import { getBaseColor } from "../utils/color-utils";
 import { Logger } from "../utils/logger";
+import { AnimationManager } from "../services/animation-manager";
 
 const { ccclass, property } = _decorator;
 
@@ -61,7 +62,14 @@ export class CellComponent extends Component {
     /** Homepath index (calculated) */
     private homePathIndex: number | undefined = undefined;
 
+    /** Whether position adjustment has been applied */
+    private positionAdjusted: boolean = false;
+
+    /** Animation manager instance */
+    private animationManager: AnimationManager;
+
     onLoad() {
+        this.animationManager = new AnimationManager();
         this.initializeCell();
     }
 
@@ -84,6 +92,11 @@ export class CellComponent extends Component {
         this.setupButton();
         this.calculateHomepathIndex();
         this.updateVisualState();
+        
+        // Adjust position after layout has positioned the cell
+        this.scheduleOnce(() => {
+            this.adjustCellPosition();
+        }, 0);
     }
 
     /**
@@ -122,6 +135,90 @@ export class CellComponent extends Component {
     }
 
     /**
+     * Adjust cell and child nodes position for EAST, WEST, NORTH, and SOUTH walkway cells
+     * EAST: columns 1-6, WEST: columns 0-6, NORTH: all columns, SOUTH: all columns
+     */
+    private adjustCellPosition() {
+        if (!this.cellData || this.positionAdjusted) {
+            return;
+        }
+
+        const position = this.cellData.position;
+        const column = this.cellData.column;
+        const row = this.cellData.row;
+        const yOffsetMultiplier = 15;
+        
+        let yOffset = 0;
+        let xOffset = 0;
+        let shouldAdjust = false;
+        let adjustCellNode = false;
+        
+        // EAST walkway: columns 1-6, add value (column * multiplier) to child nodes only (Y axis)
+        if (position === "EAST" && column >= 1 && column <= 6) {
+            yOffset = column * yOffsetMultiplier;
+            shouldAdjust = true;
+        }
+        // WEST walkway: columns 0-6, subtract value ((6 - column) * multiplier) from child nodes only (Y axis)
+        else if (position === "WEST" && column >= 0 && column <= 6) {
+            yOffset = -(6 - column) * yOffsetMultiplier;
+            shouldAdjust = true;
+        }
+        // NORTH walkway: all columns, adjust both X and Y based on row index (child nodes only)
+        // X = x - (6 - row) * 5, Y = y - (6 - row) * 10
+        else if (position === "NORTH") {
+            xOffset = -(6 - row) * 5;
+            yOffset = -(6 - row) * 10;
+            shouldAdjust = true;
+            adjustCellNode = false;
+        }
+        // SOUTH walkway: all columns, adjust both X and Y based on row index (child nodes only)
+        // X = current x + (row index * 5), Y = current y + (row index * 10)
+        else if (position === "SOUTH") {
+            xOffset = row * 5;
+            yOffset = row * 10;
+            shouldAdjust = true;
+            adjustCellNode = false;
+        }
+        
+        // Apply offset if valid
+        if (shouldAdjust && (yOffset !== 0 || xOffset !== 0)) {
+            // Adjust position for cell node if needed
+            if (adjustCellNode && (xOffset !== 0 || yOffset !== 0)) {
+                const cellPos = this.node.getPosition();
+                const newCellX = cellPos.x + xOffset;
+                const newCellY = cellPos.y + yOffset;
+                this.node.setPosition(newCellX, newCellY, cellPos.z);
+            }
+            
+            // Adjust position for all child nodes
+            const children = this.node.children;
+            for (let i = 0; i < children.length; i++) {
+                const child = children[i];
+                const currentPos = child.getPosition();
+                let newX = currentPos.x;
+                let newY = currentPos.y;
+                
+                if (xOffset !== 0) {
+                    newX = currentPos.x + xOffset;
+                }
+                if (yOffset !== 0) {
+                    newY = currentPos.y + yOffset;
+                }
+                
+                child.setPosition(newX, newY, currentPos.z);
+            }
+            
+            // Mark as adjusted to prevent multiple adjustments
+            this.positionAdjusted = true;
+            
+            const offsetInfo = [];
+            if (xOffset !== 0) offsetInfo.push(`X offset: ${xOffset}`);
+            if (yOffset !== 0) offsetInfo.push(`Y offset: ${yOffset}`);
+            Logger.debug("CellComponent", `Adjusted ${adjustCellNode ? 'cell node and ' : ''}child nodes of ${position} cell ${this.cellID}: row ${row}, column ${column}, ${offsetInfo.join(', ')}`);
+        }
+    }
+
+    /**
      * Calculate homepath index based on walkway position
      */
     private calculateHomepathIndex() {
@@ -150,6 +247,74 @@ export class CellComponent extends Component {
     }
 
     /**
+     * Get the target node for horse positioning based on cell type
+     * @returns The appropriate child node for the cell type, or the cell node itself as fallback
+     */
+    public getTargetNode(): Node {
+        if (!this.cellData) {
+            return this.node;
+        }
+
+        // Return the appropriate child node based on cell type
+        switch (this.cellData.cellType) {
+            case GAME_CONSTANTS.CELL_TYPE_NORMAL:
+                return this.nodeNormal && this.nodeNormal.active ? this.nodeNormal : this.node;
+            case GAME_CONSTANTS.CELL_TYPE_HOMEPATH:
+                return this.nodeHomePath && this.nodeHomePath.active ? this.nodeHomePath : this.node;
+            case GAME_CONSTANTS.CELL_TYPE_SPAWN:
+                return this.nodeRelease && this.nodeRelease.active ? this.nodeRelease : this.node;
+            default:
+                return this.node;
+        }
+    }
+
+    /**
+     * Play highlight animation on the cell node with particle effects
+     * @param duration Duration of each highlight cycle in seconds (default: 0.2)
+     * @param repeatCount Number of times to highlight (default: 3)
+     */
+    public playBlinkAnimation(duration: number = 0.2, repeatCount: number = 3): void {
+        // Find the target sprite to highlight
+        const targetNode = this.getTargetNode();
+        let sprite = targetNode.getComponent(Sprite);
+        
+        // If no sprite found, try to find sprite in child nodes
+        if (!sprite) {
+            const children = this.node.children;
+            for (let i = 0; i < children.length; i++) {
+                sprite = children[i].getComponent(Sprite);
+                if (sprite) {
+                    break;
+                }
+            }
+        }
+
+        // If still no sprite, try the cell node itself
+        if (!sprite) {
+            sprite = this.node.getComponent(Sprite);
+        }
+
+        // Use AnimationManager to play the highlight animation
+        this.animationManager.playCellHighlightAnimation(
+            this.node,
+            sprite,
+            duration,
+            repeatCount
+        );
+
+        Logger.debug("CellComponent", `Started highlight animation for cell ${this.cellID}, ${repeatCount} times`);
+    }
+
+    /**
+     * Stop highlight animation
+     */
+    public stopBlinkAnimation(): void {
+        if (this.animationManager) {
+            this.animationManager.stopAnimation(this.node);
+        }
+    }
+
+    /**
      * Update the visual state of the cell
      */
     public updateVisualState() {
@@ -160,7 +325,6 @@ export class CellComponent extends Component {
 
         this.updateCellTypeUI();
         this.updateCircleBorder();
-
         this.updateHomepathIndex();
     }
 
@@ -180,7 +344,7 @@ export class CellComponent extends Component {
 
         // Handle NORMAL cell type
         if (this.cellData.cellType === GAME_CONSTANTS.CELL_TYPE_NORMAL) {
-            this.updateNodeColor(this.nodeNormal, cellColor);
+            //this.updateNodeColor(this.nodeNormal, cellColor);
         } else if (this.nodeNormal) {
             this.nodeNormal.active = false;
         }
@@ -364,6 +528,10 @@ export class CellComponent extends Component {
 
 
     onDestroy() {
+        // Clean up animation
+        if (this.animationManager) {
+            this.animationManager.stopAnimation(this.node);
+        }
         // Clean up event listeners
     }
 }

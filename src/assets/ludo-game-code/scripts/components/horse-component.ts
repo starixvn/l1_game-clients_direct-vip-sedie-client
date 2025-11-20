@@ -14,6 +14,7 @@
 import { _decorator, Component, Node, Label, UITransform, Vec3, Sprite, Button } from "cc";
 import { BaseColor, Horse, Cell, GAME_CONSTANTS } from "../game-board-data";
 import { WalkwayComponent } from "./walkway-component";
+import { CellComponent } from "./cell-component";
 import { CELL_DIMENSION } from "../global-constants";
 import { gameDataService } from "../services/game-data-service";
 import { PathfindingService } from "../services/pathfinding-service";
@@ -379,6 +380,10 @@ export class HorseComponent extends Component {
         this.moveHorseToPosition(targetPosition, () => {
             // Update horse data after movement completes
             this.updateHorseDataAfterMove(targetCell);
+            
+            // Trigger blink animation on the target cell
+            this.triggerCellBlinkAnimation(targetCell.cellID);
+            
             if (onComplete) {
                 onComplete();
             }
@@ -494,13 +499,66 @@ export class HorseComponent extends Component {
         for (const walkway of walkwayComponents) {
             const cellNode = walkway.getCellNode(cellID);
             if (cellNode) {
+                // Get the CellComponent to access the target node based on cell type
+                const cellComponent = cellNode.getComponent(CellComponent);
                 const worldPos = new Vec3();
-                cellNode.getWorldPosition(worldPos);
-                return worldPos;
+                if (cellComponent) {
+                    // Get the appropriate target node based on cell type
+                    const targetNode = cellComponent.getTargetNode();
+                    
+                    targetNode.getWorldPosition(worldPos);
+                   
+                } else {
+                    // Fallback to cell node if CellComponent not found
+                    cellNode.getWorldPosition(worldPos);
+                }
+                    // Add +5 to Y position for horse positioning
+                
+                 // Add +5 to Y position for horse positioning
+                 worldPos.y += 12;
+                 return worldPos;
             }
         }
 
         return null;
+    }
+
+    /**
+     * Trigger blink animation on the target cell
+     * @param cellID Cell ID to trigger blink animation on
+     */
+    private triggerCellBlinkAnimation(cellID: string): void {
+        // Get the scene root
+        const scene = this.node.scene;
+        if (!scene) {
+            return;
+        }
+
+        // Search for WalkwayComponent in the scene
+        const walkwayComponents: WalkwayComponent[] = [];
+        const findWalkways = (node: Node) => {
+            const walkway = node.getComponent(WalkwayComponent);
+            if (walkway) {
+                walkwayComponents.push(walkway);
+            }
+            for (let i = 0; i < node.children.length; i++) {
+                findWalkways(node.children[i]);
+            }
+        };
+        
+        findWalkways(scene);
+
+        // Find the cell component and trigger blink animation
+        for (const walkway of walkwayComponents) {
+            const cellNode = walkway.getCellNode(cellID);
+            if (cellNode) {
+                const cellComponent = cellNode.getComponent(CellComponent);
+                if (cellComponent) {
+                    cellComponent.playBlinkAnimation();
+                    return;
+                }
+            }
+        }
     }
 
     /**

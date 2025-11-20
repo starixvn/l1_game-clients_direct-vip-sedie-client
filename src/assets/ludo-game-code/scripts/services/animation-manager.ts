@@ -5,7 +5,7 @@
  * Extracted to follow Single Responsibility Principle.
  */
 
-import { tween, Vec3, Node } from "cc";
+import { tween, Vec3, Node, Sprite, Color, ParticleSystem2D } from "cc";
 import { ANIMATION_CONFIG } from "../utils/cell-config";
 
 /**
@@ -165,6 +165,178 @@ export class AnimationManager {
     resetScale(node: Node): void {
         this.stopAnimation(node);
         node.setScale(1, 1, 1);
+    }
+
+    /**
+     * Play cell highlight animation with particle effects
+     * @param node Cell node to animate
+     * @param sprite Sprite component to highlight (optional, will be found if not provided)
+     * @param duration Duration of each highlight cycle in seconds (default: 0.2)
+     * @param repeatCount Number of times to highlight (default: 3)
+     * @param onComplete Optional callback when animation completes
+     */
+    playCellHighlightAnimation(
+        node: Node,
+        sprite?: Sprite,
+        duration: number = 0.2,
+        repeatCount: number = 3,
+        onComplete?: () => void
+    ): void {
+        this.stopAnimation(node);
+
+        // Find sprite if not provided
+        if (!sprite) {
+            sprite = node.getComponent(Sprite);
+            if (!sprite) {
+                // Try to find sprite in child nodes
+                const children = node.children;
+                for (let i = 0; i < children.length; i++) {
+                    sprite = children[i].getComponent(Sprite);
+                    if (sprite) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Store original color if sprite exists
+        let originalColor: Color | null = null;
+        if (sprite) {
+            originalColor = new Color(sprite.color.r, sprite.color.g, sprite.color.b, sprite.color.a);
+        }
+
+        // Create particle effect node
+        const particleNode = this.createParticleEffect(node);
+
+        // Create highlight color (brighter)
+        const highlightColor = originalColor ? new Color(
+            Math.min(255, originalColor.r + 100),
+            Math.min(255, originalColor.g + 100),
+            Math.min(255, originalColor.b + 100),
+            originalColor.a
+        ) : null;
+
+        // Create animation object that tracks both scale and color
+        const animObj = { 
+            scale: 1.0,
+            r: originalColor ? originalColor.r : 0,
+            g: originalColor ? originalColor.g : 0,
+            b: originalColor ? originalColor.b : 0
+        };
+
+        // Create highlight sequence that updates both scale and color
+        const highlightSequence = tween(animObj)
+            .to(duration, { 
+                scale: 1.025,
+                r: highlightColor ? highlightColor.r : animObj.r,
+                g: highlightColor ? highlightColor.g : animObj.g,
+                b: highlightColor ? highlightColor.b : animObj.b
+            }, {
+                onUpdate: () => {
+                    node.setScale(animObj.scale, animObj.scale, 1);
+                    if (sprite && originalColor) {
+                        sprite.color = new Color(animObj.r, animObj.g, animObj.b, originalColor.a);
+                    }
+                },
+                easing: 'sineOut'
+            })
+            .to(duration, { 
+                scale: 1.0,
+                r: originalColor ? originalColor.r : animObj.r,
+                g: originalColor ? originalColor.g : animObj.g,
+                b: originalColor ? originalColor.b : animObj.b
+            }, {
+                onUpdate: () => {
+                    node.setScale(animObj.scale, animObj.scale, 1);
+                    if (sprite && originalColor) {
+                        sprite.color = new Color(animObj.r, animObj.g, animObj.b, originalColor.a);
+                    }
+                },
+                easing: 'sineIn'
+            });
+
+        // Repeat the sequence
+        const animationTween = tween(animObj)
+            .repeat(repeatCount, highlightSequence)
+            .call(() => {
+                // Reset to original state
+                node.setScale(1, 1, 1);
+                if (sprite && originalColor) {
+                    sprite.color = originalColor;
+                }
+                
+                // Stop and remove particle effect
+                if (particleNode) {
+                    const particle = particleNode.getComponent(ParticleSystem2D);
+                    if (particle) {
+                        particle.stopSystem();
+                    }
+                    particleNode.destroy();
+                }
+                
+                this.activeTweens.delete(node);
+                if (onComplete) {
+                    onComplete();
+                }
+            })
+            .start();
+
+        this.activeTweens.set(node, animationTween);
+
+        this.activeTweens.set(node, animationTween);
+    }
+
+    /**
+     * Create particle effect for cell highlight
+     * @param parentNode Parent node to attach particle to
+     * @returns Particle node
+     */
+    private createParticleEffect(parentNode: Node): Node | null {
+        try {
+            const particleNode = new Node("HighlightParticle");
+            parentNode.addChild(particleNode);
+            
+            // Set position to center
+            particleNode.setPosition(0, 0, 0);
+
+            // Add ParticleSystem2D component
+            const particle = particleNode.addComponent(ParticleSystem2D);
+            
+            // Configure particle system for highlight effect
+            particle.file = null; // Will use default particle texture
+            particle.totalParticles = 30;
+            particle.duration = 0.6;
+            particle.life = 0.5;
+            particle.lifeVar = 0.2;
+            particle.startSize = 10;
+            particle.startSizeVar = 5;
+            particle.endSize = 5;
+            particle.endSizeVar = 3;
+            
+            // Set colors (bright yellow/white for highlight)
+            particle.startColor = new Color(255, 255, 200, 255);
+            particle.startColorVar = new Color(50, 50, 50, 50);
+            particle.endColor = new Color(255, 255, 255, 0);
+            particle.endColorVar = new Color(0, 0, 0, 0);
+            
+            // Emission properties
+            particle.emissionRate = 50;
+            particle.speed = 50;
+            particle.speedVar = 20;
+            
+            // Gravity and movement
+            particle.gravity = new Vec3(0, -50, 0);
+            particle.angle = 0;
+            particle.angleVar = 360; // Emit in all directions
+            
+            // Start the particle system
+            particle.resetSystem();
+            
+            return particleNode;
+        } catch (error) {
+            // If ParticleSystem2D is not available, return null
+            return null;
+        }
     }
 }
 
