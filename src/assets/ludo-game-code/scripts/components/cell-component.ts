@@ -11,6 +11,7 @@ import { _decorator, Component, Node, Sprite, Color, Label, UITransform, Button,
 import { Cell, CellType, Position, BaseColor, GAME_CONSTANTS } from "../game-board-data";
 import {
     CELL_DIMENSION,
+    CELL_DIMENSION_MULTIPLIER,
     WALKWAY_LENGTH
 } from "../global-constants";
 import { gameDataService } from "../services/game-data-service";
@@ -145,12 +146,12 @@ export class CellComponent extends Component {
         // EAST/WEST are horizontal, so use column
         // SOUTH indices are reversed to match logical progression (opposite of NORTH)
         // EAST indices are reversed to match logical progression (opposite of WEST)
-        if (position === "NORTH" || position === "SOUTH") {
-            this.homePathIndex = position === "SOUTH" 
+        if (position === GAME_CONSTANTS.POSITION_NORTH || position === GAME_CONSTANTS.POSITION_SOUTH) {
+            this.homePathIndex = position === GAME_CONSTANTS.POSITION_SOUTH 
                 ? WALKWAY_LENGTH - 1 - row 
                 : row;
-        } else if (position === "EAST" || position === "WEST") {
-            this.homePathIndex = position === "EAST"
+        } else if (position === GAME_CONSTANTS.POSITION_EAST || position === GAME_CONSTANTS.POSITION_WEST) {
+            this.homePathIndex = position === GAME_CONSTANTS.POSITION_EAST
                 ? WALKWAY_LENGTH - 1 - column
                 : column;
         }
@@ -262,6 +263,7 @@ export class CellComponent extends Component {
         // Handle HOMEPATH cell type
         if (this.cellData.cellType === GAME_CONSTANTS.CELL_TYPE_HOMEPATH) {
             this.updateNodeColor(this.nodeHomePath, cellColor);
+            this.updateHomePathDimensions();
         } else if (this.nodeHomePath) {
             this.nodeHomePath.active = false;
         }
@@ -284,6 +286,36 @@ export class CellComponent extends Component {
         if (sprite) {
             sprite.color = color;
             node.active = true;
+        }
+    }
+
+    /**
+     * Update home path node dimensions based on position
+     * POSITION_NORTH/POSITION_SOUTH: width = CELL_DIMENSION * CELL_DIMENSION_MULTIPLIER
+     * POSITION_EAST/POSITION_WEST: height = CELL_DIMENSION * CELL_DIMENSION_MULTIPLIER
+     */
+    private updateHomePathDimensions() {
+        if (!this.nodeHomePath || !this.cellData) {
+            return;
+        }
+
+        const position = this.cellData.position;
+        const multiplier = CELL_DIMENSION * CELL_DIMENSION_MULTIPLIER;
+
+        // Get or add UITransform component
+        let transform = this.nodeHomePath.getComponent(UITransform);
+        if (!transform) {
+            transform = this.nodeHomePath.addComponent(UITransform);
+        }
+
+        const currentSize = transform.contentSize;
+
+        if (position === GAME_CONSTANTS.POSITION_NORTH || position === GAME_CONSTANTS.POSITION_SOUTH) {
+            // For NORTH/SOUTH (vertical walkways), set width
+            transform.setContentSize(multiplier, CELL_DIMENSION);
+        } else if (position === GAME_CONSTANTS.POSITION_EAST || position === GAME_CONSTANTS.POSITION_WEST) {
+            // For EAST/WEST (horizontal walkways), set height
+            transform.setContentSize(CELL_DIMENSION, multiplier);
         }
     }
 

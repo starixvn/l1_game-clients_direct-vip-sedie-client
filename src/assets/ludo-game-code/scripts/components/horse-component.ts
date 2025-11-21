@@ -239,6 +239,11 @@ export class HorseComponent extends Component {
      * Update animations based on state
      */
     private updateAnimations() {
+        // Ensure animationManager is initialized (onLoad might not have completed yet)
+        if (!this.animationManager) {
+            this.animationManager = new AnimationManager();
+        }
+
         if (this.isFlyingToBase) {
             this.animationManager.playFlyingToBaseAnimation(this.node);
         } else if (this.isJumping) {
@@ -569,6 +574,11 @@ export class HorseComponent extends Component {
     private moveHorseToPosition(targetPosition: Vec3, onComplete?: () => void) {
         if (!this.nodeHorseIcon) {
             return;
+        }
+
+        // Ensure animationManager is initialized
+        if (!this.animationManager) {
+            this.animationManager = new AnimationManager();
         }
 
         this.animationManager.stopAnimation(this.nodeHorseIcon);
