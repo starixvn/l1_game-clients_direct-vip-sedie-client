@@ -1,6 +1,6 @@
 /**
  * Game Data Service
- * 
+ *
  * Service layer for accessing game board data.
  * Implements Dependency Inversion Principle by abstracting data access.
  */
@@ -29,7 +29,7 @@ export interface IGameDataService {
  */
 export class GameDataService implements IGameDataService {
     getBase(baseID: string): Base | null {
-        return gameBoardData.bases.find(base => base.ID === baseID) || null;
+        return gameBoardData.bases.find((base) => base.ID === baseID) || null;
     }
 
     getBases(): Base[] {
@@ -37,11 +37,11 @@ export class GameDataService implements IGameDataService {
     }
 
     getHorse(horseID: string): Horse | null {
-        return gameBoardData.horses.find(horse => horse.horseID === horseID) || null;
+        return gameBoardData.horses.find((horse) => horse.horseID === horseID) || null;
     }
 
     getHorsesForBase(baseID: string): Horse[] {
-        return gameBoardData.horses.filter(horse => horse.baseID === baseID);
+        return gameBoardData.horses.filter((horse) => horse.baseID === baseID);
     }
 
     getCell(cellID: string, position?: Position): Cell | null {
@@ -86,7 +86,7 @@ export class GameDataService implements IGameDataService {
     }
 
     getWalkway(walkwayID: string): Walkway | null {
-        return gameBoardData.walkways.find(walkway => walkway.ID === walkwayID) || null;
+        return gameBoardData.walkways.find((walkway) => walkway.ID === walkwayID) || null;
     }
 
     getWalkways(): Walkway[] {
@@ -96,4 +96,3 @@ export class GameDataService implements IGameDataService {
 
 // Singleton instance
 export const gameDataService: IGameDataService = new GameDataService();
-

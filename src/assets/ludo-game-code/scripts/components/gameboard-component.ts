@@ -1,6 +1,6 @@
 /**
  * Gameboard Component
- * 
+ *
  * Manages the game board size based on global constants.
  * Sets the board dimensions to CELL_DIMENSION * BOARD_SIZE.
  */
@@ -29,11 +29,14 @@ export class GameboardComponent extends Component {
 
         // Calculate size: width = height = CELL_DIMENSION * BOARD_SIZE
         const size = BOARD_DIMENSION; // Already calculated in global-constants.ts
-        
+
         // Set the size
         transform.setContentSize(size, size);
-        
-        Logger.debug("GameboardComponent", `Initialized gameboard size: ${size}x${size} (CELL_DIMENSION: ${CELL_DIMENSION} * BOARD_SIZE: ${BOARD_SIZE})`);
+
+        Logger.debug(
+            "GameboardComponent",
+            `Initialized gameboard size: ${size}x${size} (CELL_DIMENSION: ${CELL_DIMENSION} * BOARD_SIZE: ${BOARD_SIZE})`
+        );
     }
 
     /**
@@ -43,4 +46,3 @@ export class GameboardComponent extends Component {
         return BOARD_DIMENSION;
     }
 }
-

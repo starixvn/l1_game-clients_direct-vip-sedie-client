@@ -142,5 +142,109 @@ export class PathfindingService {
     private getCellFromLink(link: { cellID: string; position: string }): Cell | null {
         return this.dataService.getCell(link.cellID, link.position as any);
     }
+
+    /**
+     * Find path from source cell to destination cell
+     * Uses BFS to find the shortest path
+     * @param sourceCellID Starting cell ID
+     * @param targetCellID Destination cell ID
+     * @param baseID Horse's base ID (for pathfinding strategy)
+     * @returns Array of cells representing the path, or empty array if no path found
+     */
+    findPath(sourceCellID: string, targetCellID: string, baseID: string): Cell[] {
+        // If source and target are the same, return empty path
+        if (sourceCellID === targetCellID) {
+            return [];
+        }
+
+        const visited = new Set<string>();
+        const queue: Array<{ cellID: string; path: Cell[] }> = [];
+        
+        const sourceCell = this.dataService.getCell(sourceCellID);
+        if (!sourceCell) {
+            return [];
+        }
+
+        queue.push({ cellID: sourceCellID, path: [sourceCell] });
+        visited.add(sourceCellID);
+
+        while (queue.length > 0) {
+            const { cellID, path } = queue.shift()!;
+            const currentCell = this.dataService.getCell(cellID);
+            
+            if (!currentCell) {
+                continue;
+            }
+
+            // Get all possible next cells from current cell
+            const links = this.dataService.getLinksForCell(cellID);
+            
+            for (const link of links) {
+                const nextCell = this.getCellFromLink(link);
+                
+                if (!nextCell || visited.has(nextCell.cellID)) {
+                    continue;
+                }
+
+                // Check if we reached the target
+                if (nextCell.cellID === targetCellID) {
+                    return [...path, nextCell];
+                }
+
+                // Add to queue for further exploration
+                visited.add(nextCell.cellID);
+                queue.push({ cellID: nextCell.cellID, path: [...path, nextCell] });
+            }
+        }
+
+        // No path found - try direct approach using index comparison
+        return this.findPathByIndex(sourceCellID, targetCellID, baseID);
+    }
+
+    /**
+     * Alternative pathfinding using index comparison when direct pathfinding fails
+     * This handles cases where we need to move through the board sequentially
+     */
+    private findPathByIndex(sourceCellID: string, targetCellID: string, baseID: string): Cell[] {
+        const sourceCell = this.dataService.getCell(sourceCellID);
+        const targetCell = this.dataService.getCell(targetCellID);
+        
+        if (!sourceCell || !targetCell) {
+            return [];
+        }
+
+        const path: Cell[] = [];
+        let currentCell = sourceCell;
+        const maxSteps = 100; // Prevent infinite loops
+        let steps = 0;
+
+        while (currentCell.cellID !== targetCellID && steps < maxSteps) {
+            path.push(currentCell);
+            
+            // Find next cell using existing logic
+            const nextCell = this.findNextCell(currentCell.cellID, baseID);
+            
+            if (!nextCell) {
+                break;
+            }
+
+            // Check if we're getting closer to target (by index)
+            const currentIndex = currentCell.index;
+            const nextIndex = nextCell.index;
+            const targetIndex = targetCell.index;
+
+            // If we're moving away from target, might need different strategy
+            // For now, just follow the path
+            currentCell = nextCell;
+            steps++;
+        }
+
+        // Add target cell if we reached it
+        if (currentCell.cellID === targetCellID) {
+            path.push(currentCell);
+        }
+
+        return path;
+    }
 }
 

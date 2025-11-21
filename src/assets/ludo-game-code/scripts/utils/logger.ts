@@ -1,10 +1,10 @@
 /**
  * Logger Utility
- * 
+ *
  * Centralized logging utility for better control and consistency
  */
 
-const DEBUG_MODE = false; // Set to true for debug logging
+const DEBUG_MODE = true; // Set to true for debug logging
 
 /**
  * Logger class for controlled logging
@@ -34,4 +34,3 @@ export class Logger {
         }
     }
 }
-

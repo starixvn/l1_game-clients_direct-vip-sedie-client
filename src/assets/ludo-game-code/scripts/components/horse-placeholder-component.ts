@@ -1,18 +1,15 @@
 /**
  * Horse Placeholder Component
- * 
+ *
  * A wrapper component that provides a visual container for horses.
  * Can conditionally show or hide the actual horse inside.
- * 
+ *
  * Data is read from game-board-data.ts
  */
 
-import { _decorator, Component, Node, UITransform, Sprite, SpriteFrame, resources } from "cc";
+import { _decorator, Component, Node, UITransform } from "cc";
 import { BaseColor } from "../game-board-data";
-import { 
-    CELL_DIMENSION,
-    HORSE_PLACEHOLDER_SIZE
-} from "../global-constants";
+import { CELL_DIMENSION, HORSE_PLACEHOLDER_SIZE } from "../global-constants";
 import { HorseComponent } from "./horse-component";
 
 const { ccclass, property } = _decorator;
@@ -50,7 +47,10 @@ export class HorsePlaceholderComponent extends Component {
     horseID: string = "";
 
     /** Horse node (child containing HorseComponent) - assign in editor or will be found dynamically */
-    @property({ type: Node, tooltip: "Horse node (child containing HorseComponent). If not assigned, will be found by name 'Horse' or created automatically." })
+    @property({
+        type: Node,
+        tooltip: "Horse node (child containing HorseComponent). If not assigned, will be found by name 'Horse' or created automatically.",
+    })
     nodeHorse: Node = null;
 
     /** Horse component reference */
@@ -89,7 +89,7 @@ export class HorsePlaceholderComponent extends Component {
         if (!this.nodeHorse) {
             // Try to find horse node by name
             this.nodeHorse = container.getChildByName("Horse");
-            
+
             if (!this.nodeHorse) {
                 // Create horse node if not found
                 this.nodeHorse = new Node("Horse");
@@ -99,7 +99,7 @@ export class HorsePlaceholderComponent extends Component {
                 container.addChild(this.nodeHorse);
                 this.nodeHorse.setPosition(0, 0, 0);
             }
-        } 
+        }
 
         // Get horse component
         this.horseComponent = this.nodeHorse.getComponent(HorseComponent);
@@ -107,9 +107,6 @@ export class HorsePlaceholderComponent extends Component {
             // Try to get from children (in case prefab has nested structure)
             this.horseComponent = this.nodeHorse.getComponentInChildren(HorseComponent);
         }
-
-        // Set sprite frame to horse node based on base color
-        this.updateHorseNodeSpriteFrame();
 
         // Wait for next frame to ensure HorseComponent's onLoad() has completed
         // before updating visual state to avoid double initialization
@@ -122,64 +119,8 @@ export class HorsePlaceholderComponent extends Component {
      * Update the visual state of the placeholder
      */
     public updateVisualState() {
-        // Update horse node sprite frame
-        this.updateHorseNodeSpriteFrame();
-        
         // Update horse visibility and state
         this.updateHorse();
-    }
-
-    /**
-     * Convert BaseColor to lowercase color name for sprite frame
-     */
-    private getColorName(baseColor: BaseColor): string {
-        return baseColor.toLowerCase();
-    }
-
-    /**
-     * Get sprite frame name based on base color
-     */
-    private getSpriteFrameName(baseColor: BaseColor): string {
-        const colorName = this.getColorName(baseColor);
-        return `${colorName}-horse`;
-    }
-
-    /**
-     * Update the sprite frame of the HorseIcon node within the Horse node based on base color
-     */
-    private updateHorseNodeSpriteFrame() {
-        if (!this.nodeHorse) {
-            return;
-        }
-
-        // Find HorseIcon child node within Horse node
-        const horseIconNode = this.nodeHorse.getChildByName("HorseIcon");
-        if (!horseIconNode) {
-            console.warn(`HorsePlaceholderComponent: HorseIcon node not found in Horse node`);
-            return;
-        }
-
-        // Get or add Sprite component to HorseIcon node
-        let horseIconSprite = horseIconNode.getComponent(Sprite);
-        if (!horseIconSprite) {
-            horseIconSprite = horseIconNode.addComponent(Sprite);
-        }
-
-        // Get sprite frame name based on base color
-        const spriteFrameName = this.getSpriteFrameName(this.baseColor);
-        
-        // Load sprite frame from resources (path: ludo-game-code/images/{color}-horse)
-        const spriteFramePath = `ludo-game-code/images/${spriteFrameName}`;
-        resources.load(spriteFramePath, SpriteFrame, (err, spriteFrame) => {
-            if (err) {
-                console.warn(`HorsePlaceholderComponent: Failed to load sprite frame from ${spriteFramePath}: ${err.message}`);
-                return;
-            }
-            
-            if (spriteFrame) {
-                horseIconSprite.spriteFrame = spriteFrame;
-            }
-        });
     }
 
     /**
@@ -264,4 +205,3 @@ export class HorsePlaceholderComponent extends Component {
         return this.horseComponent;
     }
 }
-

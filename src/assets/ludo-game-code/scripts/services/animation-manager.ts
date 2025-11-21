@@ -1,6 +1,6 @@
 /**
  * Animation Manager
- * 
+ *
  * Handles all animation logic for game components.
  * Extracted to follow Single Responsibility Principle.
  */
@@ -15,7 +15,7 @@ export enum AnimationType {
     FLYING_TO_BASE = "flyingToBase",
     JUMPING = "jumping",
     HOVERED = "hovered",
-    MOVEMENT = "movement"
+    MOVEMENT = "movement",
 }
 
 /**
@@ -60,10 +60,10 @@ export class AnimationManager {
      */
     playFlyingToBaseAnimation(node: Node, onComplete?: () => void): void {
         this.stopAnimation(node);
-        
+
         const animationTween = tween(node)
-            .to(0.5, { scale: new Vec3(1.5, 1.5, 1) }, { easing: 'sineOut' })
-            .to(0.5, { scale: new Vec3(0, 0, 1) }, { easing: 'sineIn' })
+            .to(0.5, { scale: new Vec3(1.5, 1.5, 1) }, { easing: "sineOut" })
+            .to(0.5, { scale: new Vec3(0, 0, 1) }, { easing: "sineIn" })
             .call(() => {
                 this.activeTweens.delete(node);
                 if (onComplete) {
@@ -71,7 +71,7 @@ export class AnimationManager {
                 }
             })
             .start();
-        
+
         this.activeTweens.set(node, animationTween);
     }
 
@@ -80,17 +80,17 @@ export class AnimationManager {
      */
     playJumpingAnimation(node: Node): void {
         this.stopAnimation(node);
-        
+
         // Reset scale first
         node.setScale(1, 1, 1);
-        
+
         const animationTween = tween(node)
-            .to(0.1, { scale: new Vec3(1.2, 1.2, 1) }, { easing: 'sineOut' })
-            .to(0.1, { scale: new Vec3(1, 1, 1) }, { easing: 'sineIn' })
+            .to(0.1, { scale: new Vec3(1.2, 1.2, 1) }, { easing: "sineOut" })
+            .to(0.1, { scale: new Vec3(1, 1, 1) }, { easing: "sineIn" })
             .union()
             .repeatForever()
             .start();
-        
+
         this.activeTweens.set(node, animationTween);
     }
 
@@ -99,55 +99,55 @@ export class AnimationManager {
      */
     playHoveredAnimation(node: Node): void {
         this.stopAnimation(node);
-        
+
         const animationTween = tween(node)
-            .to(0.2, { scale: new Vec3(1.1, 1.1, 1) }, { easing: 'sineOut' })
+            .to(0.2, { scale: new Vec3(1.1, 1.1, 1) }, { easing: "sineOut" })
             .start();
-        
+
         this.activeTweens.set(node, animationTween);
     }
 
     /**
      * Play movement animation with jumping motion
      */
-    playMovementAnimation(
-        node: Node,
-        startPos: Vec3,
-        targetPos: Vec3,
-        onComplete?: () => void
-    ): void {
+    playMovementAnimation(node: Node, startPos: Vec3, targetPos: Vec3, onComplete?: () => void): void {
         this.stopAnimation(node);
-        
+
         // Calculate jump height (proportional to distance traveled)
         const distance = Vec3.distance(startPos, targetPos);
-        const jumpHeight = Math.min(
-            distance * ANIMATION_CONFIG.JUMP_HEIGHT_MULTIPLIER,
-            ANIMATION_CONFIG.MAX_JUMP_HEIGHT
-        );
-        
+        const jumpHeight = Math.min(distance * ANIMATION_CONFIG.JUMP_HEIGHT_MULTIPLIER, ANIMATION_CONFIG.MAX_JUMP_HEIGHT);
+
         // Create jumping animation: move horizontally while jumping vertically
         const midPoint = new Vec3();
         Vec3.lerp(midPoint, startPos, targetPos, 0.5);
         midPoint.y += jumpHeight; // Peak of the jump
-        
+
         // Animation duration based on distance
         const duration = Math.max(
             ANIMATION_CONFIG.MIN_DURATION,
             Math.min(ANIMATION_CONFIG.MAX_DURATION, distance / ANIMATION_CONFIG.DURATION_DIVISOR)
         );
-        
+
         // Jump animation: move to midpoint (peak), then to target
         const animationTween = tween(node)
-            .to(duration / 2, { 
-                position: midPoint 
-            }, { 
-                easing: 'sineOut' // Accelerate upward
-            })
-            .to(duration / 2, { 
-                position: targetPos 
-            }, { 
-                easing: 'sineIn' // Decelerate downward
-            })
+            .to(
+                duration / 2,
+                {
+                    position: midPoint,
+                },
+                {
+                    easing: "sineOut", // Accelerate upward
+                }
+            )
+            .to(
+                duration / 2,
+                {
+                    position: targetPos,
+                },
+                {
+                    easing: "sineIn", // Decelerate downward
+                }
+            )
             .call(() => {
                 this.activeTweens.delete(node);
                 if (onComplete) {
@@ -155,7 +155,7 @@ export class AnimationManager {
                 }
             })
             .start();
-        
+
         this.activeTweens.set(node, animationTween);
     }
 
@@ -209,51 +209,61 @@ export class AnimationManager {
         const particleNode = this.createParticleEffect(node);
 
         // Create highlight color (brighter)
-        const highlightColor = originalColor ? new Color(
-            Math.min(255, originalColor.r + 100),
-            Math.min(255, originalColor.g + 100),
-            Math.min(255, originalColor.b + 100),
-            originalColor.a
-        ) : null;
+        const highlightColor = originalColor
+            ? new Color(
+                  Math.min(255, originalColor.r + 100),
+                  Math.min(255, originalColor.g + 100),
+                  Math.min(255, originalColor.b + 100),
+                  originalColor.a
+              )
+            : null;
 
         // Create animation object that tracks both scale and color
-        const animObj = { 
+        const animObj = {
             scale: 1.0,
             r: originalColor ? originalColor.r : 0,
             g: originalColor ? originalColor.g : 0,
-            b: originalColor ? originalColor.b : 0
+            b: originalColor ? originalColor.b : 0,
         };
 
         // Create highlight sequence that updates both scale and color
         const highlightSequence = tween(animObj)
-            .to(duration, { 
-                scale: 1.025,
-                r: highlightColor ? highlightColor.r : animObj.r,
-                g: highlightColor ? highlightColor.g : animObj.g,
-                b: highlightColor ? highlightColor.b : animObj.b
-            }, {
-                onUpdate: () => {
-                    node.setScale(animObj.scale, animObj.scale, 1);
-                    if (sprite && originalColor) {
-                        sprite.color = new Color(animObj.r, animObj.g, animObj.b, originalColor.a);
-                    }
+            .to(
+                duration,
+                {
+                    scale: 1.025,
+                    r: highlightColor ? highlightColor.r : animObj.r,
+                    g: highlightColor ? highlightColor.g : animObj.g,
+                    b: highlightColor ? highlightColor.b : animObj.b,
                 },
-                easing: 'sineOut'
-            })
-            .to(duration, { 
-                scale: 1.0,
-                r: originalColor ? originalColor.r : animObj.r,
-                g: originalColor ? originalColor.g : animObj.g,
-                b: originalColor ? originalColor.b : animObj.b
-            }, {
-                onUpdate: () => {
-                    node.setScale(animObj.scale, animObj.scale, 1);
-                    if (sprite && originalColor) {
-                        sprite.color = new Color(animObj.r, animObj.g, animObj.b, originalColor.a);
-                    }
+                {
+                    onUpdate: () => {
+                        node.setScale(animObj.scale, animObj.scale, 1);
+                        if (sprite && originalColor) {
+                            sprite.color = new Color(animObj.r, animObj.g, animObj.b, originalColor.a);
+                        }
+                    },
+                    easing: "sineOut",
+                }
+            )
+            .to(
+                duration,
+                {
+                    scale: 1.0,
+                    r: originalColor ? originalColor.r : animObj.r,
+                    g: originalColor ? originalColor.g : animObj.g,
+                    b: originalColor ? originalColor.b : animObj.b,
                 },
-                easing: 'sineIn'
-            });
+                {
+                    onUpdate: () => {
+                        node.setScale(animObj.scale, animObj.scale, 1);
+                        if (sprite && originalColor) {
+                            sprite.color = new Color(animObj.r, animObj.g, animObj.b, originalColor.a);
+                        }
+                    },
+                    easing: "sineIn",
+                }
+            );
 
         // Repeat the sequence
         const animationTween = tween(animObj)
@@ -264,7 +274,7 @@ export class AnimationManager {
                 if (sprite && originalColor) {
                     sprite.color = originalColor;
                 }
-                
+
                 // Stop and remove particle effect
                 if (particleNode) {
                     const particle = particleNode.getComponent(ParticleSystem2D);
@@ -273,7 +283,7 @@ export class AnimationManager {
                     }
                     particleNode.destroy();
                 }
-                
+
                 this.activeTweens.delete(node);
                 if (onComplete) {
                     onComplete();
@@ -295,13 +305,13 @@ export class AnimationManager {
         try {
             const particleNode = new Node("HighlightParticle");
             parentNode.addChild(particleNode);
-            
+
             // Set position to center
             particleNode.setPosition(0, 0, 0);
 
             // Add ParticleSystem2D component
             const particle = particleNode.addComponent(ParticleSystem2D);
-            
+
             // Configure particle system for highlight effect
             particle.file = null; // Will use default particle texture
             particle.totalParticles = 30;
@@ -312,26 +322,26 @@ export class AnimationManager {
             particle.startSizeVar = 5;
             particle.endSize = 5;
             particle.endSizeVar = 3;
-            
+
             // Set colors (bright yellow/white for highlight)
             particle.startColor = new Color(255, 255, 200, 255);
             particle.startColorVar = new Color(50, 50, 50, 50);
             particle.endColor = new Color(255, 255, 255, 0);
             particle.endColorVar = new Color(0, 0, 0, 0);
-            
+
             // Emission properties
             particle.emissionRate = 50;
             particle.speed = 50;
             particle.speedVar = 20;
-            
+
             // Gravity and movement
             particle.gravity = new Vec3(0, -50, 0);
             particle.angle = 0;
             particle.angleVar = 360; // Emit in all directions
-            
+
             // Start the particle system
             particle.resetSystem();
-            
+
             return particleNode;
         } catch (error) {
             // If ParticleSystem2D is not available, return null
@@ -339,4 +349,3 @@ export class AnimationManager {
         }
     }
 }
-
