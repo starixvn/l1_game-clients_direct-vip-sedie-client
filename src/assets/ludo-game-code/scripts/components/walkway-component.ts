@@ -19,7 +19,7 @@ import {
 } from "../game-board-data";
 import { 
     WALKWAY_LENGTH, 
-    WALKWAY_WIDTH, 
+    WALKWAY_VERTICAL_WIDTH, 
     WALKWAY_VERTICAL_HEIGHT, 
     CELL_DIMENSION,
     CELL_DIMENSION_MULTIPLIER
@@ -312,12 +312,12 @@ export class WalkwayComponent extends Component {
         if (this.isHorizontal) {
             return {
                 width: WALKWAY_LENGTH * CELL_DIMENSION,
-                height: WALKWAY_WIDTH * CELL_DIMENSION
+                height: WALKWAY_VERTICAL_WIDTH * CELL_DIMENSION
             };
         }
 
         return {
-            width: WALKWAY_WIDTH * CELL_DIMENSION,
+            width: (WALKWAY_VERTICAL_WIDTH - 1 + CELL_DIMENSION_MULTIPLIER) * CELL_DIMENSION,
             height: WALKWAY_VERTICAL_HEIGHT * CELL_DIMENSION
         };
     }

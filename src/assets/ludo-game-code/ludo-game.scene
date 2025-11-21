@@ -270,8 +270,8 @@
       "__type__": "cc.Quat",
       "x": 0,
       "y": 0,
-      "z": -0.4067366430758002,
-      "w": 0.9135454576426009
+      "z": 0,
+      "w": 1
     },
     "_lscale": {
       "__type__": "cc.Vec3",
@@ -285,7 +285,7 @@
       "__type__": "cc.Vec3",
       "x": 0,
       "y": 0,
-      "z": -48
+      "z": 0
     },
     "_id": "75GZDeDR1A6aoxu9eq9XTe"
   },
@@ -365,8 +365,8 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 52.237,
-      "y": -39.225,
+      "x": 0,
+      "y": 0,
       "z": 0
     },
     "_lrot": {
@@ -476,7 +476,7 @@
     "node": {
       "__id__": 6
     },
-    "_enabled": false,
+    "_enabled": true,
     "__prefab": null,
     "_customMaterial": null,
     "_srcBlendFactor": 2,
@@ -731,8 +731,8 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": -9.689,
-      "y": -45.668,
+      "x": 0,
+      "y": 0,
       "z": 0
     },
     "_lrot": {
@@ -842,7 +842,7 @@
     "node": {
       "__id__": 17
     },
-    "_enabled": false,
+    "_enabled": true,
     "__prefab": null,
     "_customMaterial": null,
     "_srcBlendFactor": 2,
@@ -1343,8 +1343,8 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 61.34,
-      "y": 18.859,
+      "x": 0,
+      "y": 0,
       "z": 0
     },
     "_lrot": {
@@ -1454,7 +1454,7 @@
     "node": {
       "__id__": 36
     },
-    "_enabled": false,
+    "_enabled": true,
     "__prefab": null,
     "_customMaterial": null,
     "_srcBlendFactor": 2,
@@ -1709,8 +1709,8 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": -21.16,
-      "y": 62.638,
+      "x": 0,
+      "y": 0,
       "z": 0
     },
     "_lrot": {
@@ -1820,7 +1820,7 @@
     "node": {
       "__id__": 47
     },
-    "_enabled": false,
+    "_enabled": true,
     "__prefab": null,
     "_customMaterial": null,
     "_srcBlendFactor": 2,
@@ -1951,7 +1951,7 @@
       "__id__": 2
     },
     "_children": [],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 58

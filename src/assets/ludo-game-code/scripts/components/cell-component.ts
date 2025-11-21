@@ -9,13 +9,9 @@
 
 import { _decorator, Component, Node, Sprite, Color, Label, UITransform, Button, Graphics } from "cc";
 import { Cell, CellType, Position, BaseColor, GAME_CONSTANTS } from "../game-board-data";
-import { 
+import {
     CELL_DIMENSION,
-    WALKWAY_LENGTH,
-    CELL_POSITION_Y_OFFSET_MULTIPLIER,
-    CELL_POSITION_NORTH_SOUTH_X_MULTIPLIER,
-    CELL_POSITION_NORTH_SOUTH_Y_MULTIPLIER,
-    CELL_POSITION_ROW_COLUMN_MAX
+    WALKWAY_LENGTH
 } from "../global-constants";
 import { gameDataService } from "../services/game-data-service";
 import { getBaseColor } from "../utils/color-utils";
@@ -66,8 +62,6 @@ export class CellComponent extends Component {
     /** Homepath index (calculated) */
     private homePathIndex: number | undefined = undefined;
 
-    /** Whether position adjustment has been applied */
-    private positionAdjusted: boolean = false;
 
     /** Animation manager instance */
     private animationManager: AnimationManager;
@@ -96,11 +90,6 @@ export class CellComponent extends Component {
         this.setupButton();
         this.calculateHomepathIndex();
         this.updateVisualState();
-        
-        // Adjust position after layout has positioned the cell
-        this.scheduleOnce(() => {
-            this.adjustCellPosition();
-        }, 0);
     }
 
     /**
@@ -138,91 +127,6 @@ export class CellComponent extends Component {
         }
     }
 
-    /**
-     * Adjust cell and child nodes position for EAST, WEST, NORTH, and SOUTH walkway cells
-     * EAST: columns 1-6, WEST: columns 0-6, NORTH: all columns, SOUTH: all columns
-     */
-    private adjustCellPosition() {
-        if (!this.cellData || this.positionAdjusted) {
-            return;
-        }
-
-        const position = this.cellData.position;
-        const column = this.cellData.column;
-        const row = this.cellData.row;
-        
-        let yOffset = 0;
-        let xOffset = 0;
-        let shouldAdjust = false;
-        let adjustCellNode = false;
-        
-        // EAST walkway: columns 1-6, add value (column * multiplier) to child nodes only (Y axis)
-        if (position === "EAST" && column >= 1 && column <= CELL_POSITION_ROW_COLUMN_MAX) {
-            yOffset = column * CELL_POSITION_Y_OFFSET_MULTIPLIER;
-            shouldAdjust = true;
-        }
-        // WEST walkway: columns 0-6, subtract value ((CELL_POSITION_ROW_COLUMN_MAX - column) * multiplier) from child nodes only (Y axis)
-        else if (position === "WEST" && column >= 0 && column <= CELL_POSITION_ROW_COLUMN_MAX) {
-            yOffset = -(CELL_POSITION_ROW_COLUMN_MAX - column) * 10;
-            xOffset = -(CELL_POSITION_ROW_COLUMN_MAX - column - 1) * 5;
-            shouldAdjust = true;
-        }
-        // NORTH walkway: all columns, adjust both X and Y based on row index (child nodes only)
-        // X = x - (CELL_POSITION_ROW_COLUMN_MAX - row) * CELL_POSITION_NORTH_SOUTH_X_MULTIPLIER
-        // Y = y - (CELL_POSITION_ROW_COLUMN_MAX - row) * CELL_POSITION_NORTH_SOUTH_Y_MULTIPLIER
-        else if (position === "NORTH") {
-            xOffset = 5 + (10 * column);
-            yOffset = -(CELL_POSITION_ROW_COLUMN_MAX - row) * 5 + (column * 10);
-            shouldAdjust = true;
-            adjustCellNode = false;
-        }
-        // SOUTH walkway: all columns, adjust both X and Y based on row index (child nodes only)
-        // X = current x + (row index * CELL_POSITION_NORTH_SOUTH_X_MULTIPLIER)
-        // Y = current y + (row index * CELL_POSITION_NORTH_SOUTH_Y_MULTIPLIER)
-        else if (position === "SOUTH") {
-            xOffset = row * CELL_POSITION_NORTH_SOUTH_X_MULTIPLIER;
-            yOffset = row * CELL_POSITION_NORTH_SOUTH_Y_MULTIPLIER;
-            shouldAdjust = true;
-            adjustCellNode = false;
-        }
-        
-        // Apply offset if valid
-        if (shouldAdjust && (yOffset !== 0 || xOffset !== 0)) {
-            // Adjust position for cell node if needed
-            if (adjustCellNode && (xOffset !== 0 || yOffset !== 0)) {
-                const cellPos = this.node.getPosition();
-                const newCellX = cellPos.x + xOffset;
-                const newCellY = cellPos.y + yOffset;
-                this.node.setPosition(newCellX, newCellY, cellPos.z);
-            }
-            
-            // Adjust position for all child nodes
-            const children = this.node.children;
-            for (let i = 0; i < children.length; i++) {
-                const child = children[i];
-                const currentPos = child.getPosition();
-                let newX = currentPos.x;
-                let newY = currentPos.y;
-                
-                if (xOffset !== 0) {
-                    newX = currentPos.x + xOffset;
-                }
-                if (yOffset !== 0) {
-                    newY = currentPos.y + yOffset;
-                }
-                
-                child.setPosition(newX, newY, currentPos.z);
-            }
-            
-            // Mark as adjusted to prevent multiple adjustments
-            this.positionAdjusted = true;
-            
-            const offsetInfo = [];
-            if (xOffset !== 0) offsetInfo.push(`X offset: ${xOffset}`);
-            if (yOffset !== 0) offsetInfo.push(`Y offset: ${yOffset}`);
-            Logger.debug("CellComponent", `Adjusted ${adjustCellNode ? 'cell node and ' : ''}child nodes of ${position} cell ${this.cellID}: row ${row}, column ${column}, ${offsetInfo.join(', ')}`);
-        }
-    }
 
     /**
      * Calculate homepath index based on walkway position

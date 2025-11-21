@@ -36,12 +36,6 @@ export const CELL_DIMENSION_MULTIPLIER = 2;                   // Multiplier for 
 export const BOARD_SIZE = 15;                                 // Cells (increased to accommodate 7 columns in both WEST and EAST walkways)
 export const BOARD_DIMENSION = ((WALKWAY_ROW_COUNT * 2) + CELL_DIMENSION_MULTIPLIER) * CELL_DIMENSION;
 
-// Cell position adjustment constants
-export const CELL_POSITION_Y_OFFSET_MULTIPLIER = 15;           // Multiplier for EAST/WEST walkway Y offset calculations
-export const CELL_POSITION_NORTH_SOUTH_X_MULTIPLIER = 5;      // Multiplier for NORTH/SOUTH walkway X offset calculations
-export const CELL_POSITION_NORTH_SOUTH_Y_MULTIPLIER = 10;     // Multiplier for NORTH/SOUTH walkway Y offset calculations
-export const CELL_POSITION_ROW_COLUMN_MAX = 6;                // Maximum row/column index used in position calculations
-
 // Size constants mapped to base constants (for backward compatibility and semantic clarity)
 export const CELL_SIZE = UNIT_SIZE;                           // Size of a single cell (1)
 export const HORSE_SIZE = UNIT_SIZE;                          // Size of a horse (1)
@@ -49,7 +43,7 @@ export const DICE_SIZE = UNIT_SIZE;                           // Size of a die (
 
 export const BASE_SIZE = WALKWAY_ROW_COUNT - 1;               // Base size (6) - same as walkway length minus 1
 export const WALKWAY_LENGTH = WALKWAY_ROW_COUNT;              // Walkway length (7)
-export const WALKWAY_WIDTH = WALKWAY_COLUMN_COUNT;           // Walkway width (3)
+export const WALKWAY_VERTICAL_WIDTH = WALKWAY_COLUMN_COUNT;           // Walkway width (3)
 export const WALKWAY_VERTICAL_HEIGHT = WALKWAY_ROW_COUNT - 1; // Vertical walkway height for NORTH/SOUTH (6)
 export const HOME_SIZE = WALKWAY_COLUMN_COUNT;                // Home size (3) - same as walkway width
 export const INNER_BASE_SIZE = INNER_BASE_DIMENSION;         // Inner base size (4)
