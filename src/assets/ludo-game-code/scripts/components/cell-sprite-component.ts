@@ -119,10 +119,7 @@ export class CellSpriteComponent extends Component {
         // Get index for baseID
         const index = this.getBaseIDIndex(baseID);
         if (index < 0 || index >= this.cellSprites.length) {
-            Logger.warn(
-                "CellSpriteComponent",
-                `Invalid index ${index} for baseID ${baseID} (array length: ${this.cellSprites.length})`
-            );
+            Logger.warn("CellSpriteComponent", `Invalid index ${index} for baseID ${baseID} (array length: ${this.cellSprites.length})`);
             return;
         }
 
@@ -143,4 +140,3 @@ export class CellSpriteComponent extends Component {
         this.updateSpriteFrame();
     }
 }
-
