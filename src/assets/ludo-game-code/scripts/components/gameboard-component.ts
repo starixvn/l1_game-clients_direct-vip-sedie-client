@@ -31,7 +31,7 @@ export class GameboardComponent extends Component {
         const size = BOARD_DIMENSION; // Already calculated in global-constants.ts
 
         // Set the size
-        transform.setContentSize(size, size);
+        transform.setContentSize(size + 2, size);
 
         Logger.debug(
             "GameboardComponent",
