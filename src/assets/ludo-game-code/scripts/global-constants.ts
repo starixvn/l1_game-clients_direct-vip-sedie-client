@@ -31,7 +31,7 @@ export const INNER_BASE_DIMENSION = 4; // Inner base dimension (INNER_BASE_SIZE)
 export const HORSE_PLACEHOLDER_DIMENSION = 1; // Horse placeholder dimension
 
 // Pixel dimensions
-export const CELL_DIMENSION = 45; // Pixels per cell
+export const CELL_DIMENSION = 45.65; // Pixels per cell
 export const CELL_DIMENSION_MULTIPLIER = 2.4; // Multiplier for double-sized cells (used for HOME walkway and special cells)
 export const BOARD_SIZE = 15; // Cells (increased to accommodate 7 columns in both WEST and EAST walkways)
 export const BOARD_DIMENSION = (WALKWAY_ROW_COUNT * 2 + CELL_DIMENSION_MULTIPLIER) * CELL_DIMENSION;
