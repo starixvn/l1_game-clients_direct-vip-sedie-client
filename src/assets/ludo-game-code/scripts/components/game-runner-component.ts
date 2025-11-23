@@ -6,11 +6,14 @@
  */
 
 import { _decorator, Component, Node, Label, Button, Color } from "cc";
+import gc from "@sg/game-client-base";
 import { Logger } from "../utils/logger";
 import { GAME_STATES, GameState } from "../stubs/game-state-stub";
 import { HorseComponent } from "./horse-component";
 import { gameDataService } from "../services/game-data-service";
 import { getBaseColor } from "../utils/color-utils";
+import { DiceResultHandler } from "../../../game/scripts/handlers/dice-result-handler";
+import { DiceResultData } from "../../../game/scripts/stores/dice-result-store";
 
 const { ccclass, property } = _decorator;
 
@@ -54,7 +57,23 @@ export class GameRunnerComponent extends Component {
     /** Map of horseID to HorseComponent for quick lookup */
     private horseComponentsMap: Map<string, HorseComponent> = new Map();
 
+    /** Dice result handler instance */
+    private diceResultHandler: DiceResultHandler | null = null;
+
+    /** Player names mapping */
+    private readonly playerNames: string[] = ["Yellow", "Blue", "Red", "Green"];
+
     start() {
+        // Initialize dice result handler from container
+        try {
+            const container = gc.getContainer?.();
+            if (container) {
+                this.diceResultHandler = container.get(DiceResultHandler);
+            }
+        } catch (e) {
+            Logger.warn("GameRunnerComponent", "Could not get DiceResultHandler from container: " + e);
+        }
+
         // Initialize horse components in start() to ensure scene is fully loaded
         this.initializeHorseComponents();
         this.setupUI();
@@ -92,13 +111,17 @@ export class GameRunnerComponent extends Component {
             this.diceLabel.string = "Dice: -";
             // Reset to default color (white)
             this.diceLabel.color = new Color(255, 255, 255, 255);
+
+            // Send null to handler to clear dice result
+            if (this.diceResultHandler) {
+                this.diceResultHandler.handle(null);
+            }
             return;
         }
 
         const diceValues = gameState.dice.join(", ");
         const currentPlayer = gameState.currentPlayer;
-        const playerNames = ["Yellow", "Blue", "Red", "Green"];
-        const playerName = playerNames[currentPlayer] || `Player ${currentPlayer}`;
+        const playerName = this.playerNames[currentPlayer] || `Player ${currentPlayer}`;
 
         // Check if there's a move (oldPosition !== newPosition means a move was made)
         const hasMove = gameState.playerAction && gameState.playerAction.oldPosition !== gameState.playerAction.newPosition;
@@ -130,6 +153,17 @@ export class GameRunnerComponent extends Component {
         } else {
             // Fallback to white if player mapping not found
             this.diceLabel.color = new Color(255, 255, 255, 255);
+        }
+
+        // Send dice result to handler/store
+        if (this.diceResultHandler) {
+            const diceResultData: DiceResultData = {
+                dice: gameState.dice,
+                currentPlayer: gameState.currentPlayer,
+                playerName: playerName,
+                hasMove: hasMove,
+            };
+            this.diceResultHandler.handle(diceResultData);
         }
     }
 
