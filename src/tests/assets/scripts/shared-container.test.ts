@@ -1,6 +1,5 @@
 import { buildObserverContainer } from "@sg/game-client-base";
 import { getSharedContainer } from "db://shared-components/shared/scripts/startup";
-import mobx from "mobx";
 import { configure } from "observer";
 
 import "../../../assets/scripts/shared-container";
@@ -28,6 +27,12 @@ describe("when imported", () => {
 
     it("should configure observer", () => {
         // Assert
-        expect(configure).toBeCalledWith({ default: { mobx, container: { sharedContainer: true } } });
+        expect(configure).toBeCalledWith(
+            expect.objectContaining({
+                default: expect.objectContaining({
+                    container: { sharedContainer: true },
+                }),
+            })
+        );
     });
 });

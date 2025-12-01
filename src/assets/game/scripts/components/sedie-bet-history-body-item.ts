@@ -3,9 +3,10 @@ import { _decorator, Button, instantiate, Label, Node, Prefab } from "cc";
 import { BetHistoryNewBodyItem } from "db://shared-components/game/bet-history-new/scripts/bet-history-new-body-item";
 import { BetHistoryBodyItemType } from "db://shared-components/game/bet-history/scripts/components/bet-history-body-item";
 import SeDieBetHistoryBetOption from "./sedie-bet-history-bet-option";
+import { formatCurrencyWithConfig } from "db://shared-components/shared/utils";
 const { ccclass, property } = _decorator;
 
-const { DateTimeUtils, FormatUtils } = gc;
+const { DateTimeUtils } = gc;
 
 @ccclass
 export class SeDieBetHistoryBodyItem extends BetHistoryNewBodyItem {
@@ -42,7 +43,7 @@ export class SeDieBetHistoryBodyItem extends BetHistoryNewBodyItem {
                 if (+stake > 0) {
                     stake = freeBet ? 0 : stake;
                     const odd = this.getFormatOdd(odds[choice]?.toString(), data?.fractionalOddsFormat);
-                    option.handleBetOptionItem(choice, odd, FormatUtils.numberWithCommas(stake, 2));
+                    option.handleBetOptionItem(choice, odd, formatCurrencyWithConfig(stake));
                     option.highlightForWinning(settlementResult[choice]);
                     this.betOption.addChild(node);
                 }
