@@ -7,7 +7,7 @@ import { ChipFlying } from "db://shared-components/game/chip-flying/scripts/comp
 import GameComponent from "db://shared-components/game/scripts/components/game-component";
 import { WinningResult } from "db://shared-components/shared/common-components/winning-result/scripts/winning-result";
 import { startGame } from "db://shared-components/shared/scripts/startup";
-import { FunctionUtils, isIOS } from "db://shared-components/shared/utils";
+import { AnimationUtils, isIOS } from "db://shared-components/shared/utils";
 import Observer from "observer";
 
 import { siteConfigs } from "../../../scripts/site-configs";
@@ -41,7 +41,7 @@ export default class Game extends GameComponent {
     protected enableFixHandleFinish = true;
     private audioContainer: AudioContainer = null;
     private winningResult: WinningResult = null;
-    private soundWinChoice = ["odd", "even"];
+    private readonly soundWinChoice = ["odd", "even"];
     private currentFinish: gc.GameServiceMessage.Finish = null;
 
     onLoad() {
@@ -78,7 +78,7 @@ export default class Game extends GameComponent {
             return;
         }
         if (isIOS()) {
-            await FunctionUtils.delay(800);
+            await AnimationUtils.delayTime(0.8);
         }
 
         this.showResult(result, true, settlementResult).then(() => {
@@ -100,7 +100,7 @@ export default class Game extends GameComponent {
             const { result, settlementResult } = lastRound;
             if (firstJoinGameHistory.animationHighlight) {
                 if (roundTime === 0) {
-                    await FunctionUtils.delay(1000);
+                    await AnimationUtils.delayTime(1);
                     if (this.currentFinish) {
                         return;
                     }

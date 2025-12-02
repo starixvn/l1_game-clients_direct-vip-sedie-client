@@ -28,7 +28,7 @@ export class SeDieResultRenderer extends ScoreboardItemRenderer {
     calculateScore(result: IResult) {
         let trueCount = 0;
 
-        for (let key in result) {
+        for (const key in result) {
             if (result[key]) {
                 trueCount++;
             }

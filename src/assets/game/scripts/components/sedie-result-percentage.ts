@@ -18,12 +18,12 @@ export class SeDieResultPercentage extends ResultPercentage {
         const evenValue = 100 - oddValue;
 
         // Calculate red2, white4, and red4 percentages for odd
-        let red2Value = Math.min(calculatePercentage(count["red2"]), evenValue);
-        let white4Value = Math.min(calculatePercentage(count["white4"]), evenValue - red2Value);
+        const red2Value = Math.min(calculatePercentage(count["red2"]), evenValue);
+        const white4Value = Math.min(calculatePercentage(count["white4"]), evenValue - red2Value);
         const red4Value = evenValue - (red2Value + white4Value);
 
         // Calculate white3 and red3 percentages for even
-        let white3Value = Math.min(calculatePercentage(count["white3"]), oddValue);
+        const white3Value = Math.min(calculatePercentage(count["white3"]), oddValue);
         const red3Value = oddValue - white3Value;
 
         // Assign calculated values to percentage object
